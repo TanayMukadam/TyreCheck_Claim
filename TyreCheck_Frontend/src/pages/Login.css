@@ -1,0 +1,89 @@
+
+/* Main Background */
+.login-wrapper {
+  width: 100vw;
+  height: 100vh;
+  background: #dfdfdf;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1px;
+}
+
+/* Card Layout */
+.login-card {
+  width: min(1100px, 90vw);
+  height: min(760px, 85vh);
+  background: #fafafa;
+  border-radius: 25px;
+  display: flex;
+  overflow: hidden;
+  box-shadow: 0px 0px 30px rgba(0,0,0,0.08);
+  transition: 0.3s ease-in-out;
+}
+
+/* Left Section (NOW FULLY CENTER ALIGNED & DYNAMIC) */
+.left-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;    /* Center vertically */
+  align-items: center;        /* Center horizontally */
+  padding: 40px 50px;
+  min-width: 300px;
+  box-sizing: border-box;
+}
+
+.login-logo {
+  width: 250px;
+  margin-bottom: 25px;
+}
+
+.title {
+  font-size: 30px;
+  font-weight: 800;
+  margin-bottom: 20px;
+  margin-top: -2%;
+  text-align: center;
+}
+
+.input-box {
+  width: 88%;
+  padding: 14px;
+  margin: 12px 0;
+  border-radius: 10px;
+  border: 1.5px solid #dcdcdc;
+  font-size: 15px;
+}
+
+.btn-login {
+  width: 95%;
+  margin-top: 20px;
+  padding: 14px;
+  background: #6a8b3e;
+  color: #fff;
+  font-size: 17px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-login:hover {
+  background: #4c6630;
+}
+
+/* Right Section (NOW FULL IMAGE AREA) */
+.right-section {
+  flex: 1.25;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url("../assets/tyre.png"); /* update with your actual file */
+}
+
+/* Hide <img> because background handles it */
+.hero-img {
+  display: none;
+}
+
