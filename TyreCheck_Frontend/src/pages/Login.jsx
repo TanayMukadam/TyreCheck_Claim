@@ -3,6 +3,7 @@ import "./Login.css";
 import TyreImage from "../assets/tyre.png";
 import Logo from "../assets/Logo.png";
 import { useNavigate } from "react-router-dom";
+import tyrecheck_url from "../constants/tyrecheck.constants.js"
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -13,7 +14,7 @@ export default function Login() {
   e.preventDefault();
 
   try {
-    const response = await fetch("http://127.0.0.1:8000/auth/user/user_login", {
+    const response = await fetch(`${tyrecheck_url}/auth/user/user_login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
