@@ -1,16 +1,20 @@
 // src/App.jsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
+import ViewClaim from "./pages/ViewClaim";
 import PrivateRoute from "./routes/PrivateRoute";
+import Login from "./pages/Login";
 
-export default function App() {
+function App() {
   return (
     <BrowserRouter>
       <Routes>
+
+        {/* LOGIN PAGE */}
         <Route path="/" element={<Login />} />
 
-        {/* Protected dashboard route */}
+        {/* DASHBOARD (Protected) */}
         <Route
           path="/dashboard"
           element={
@@ -19,7 +23,23 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
+        {/* VIEW CLAIM PAGE (Protected) */}
+        <Route
+          path="/claim/:id"
+          element={
+            <PrivateRoute>
+              <ViewClaim />
+            </PrivateRoute>
+          }
+        />
+
+        {/* ANY UNKNOWN ROUTE → REDIRECT TO LOGIN */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+
       </Routes>
     </BrowserRouter>
   );
 }
+
+export default App;
