@@ -2,21 +2,16 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from urllib.parse import quote
+from dotenv import load_dotenv
+load_dotenv()
 
-db_username = os.getenv("DB_USERNAME", "root")
-db_password = os.getenv("DB_PASSWORD", "Check@2020")
+db_username = os.environ.get("DB_USERNAME")
+db_password = os.environ.get("DB_PASSWORD")
 db_password = quote(db_password)
-db_host = os.getenv("DB_HOST", "164.52.209.14")
-db_name = os.getenv("DB_NAME", "tyrecheck")
+db_host = os.environ.get("DB_HOST")
+db_name = os.environ.get("DB_NAME")
 
 
-## Localhost --->
-
-# db_username = os.getenv("DB_USERNAME", "root")
-# db_password = os.getenv("DB_PASSWORD", "Tanay@82629")
-# db_password = quote(db_password)
-# db_host = os.getenv("DB_HOST", "localhost")
-# db_name = os.getenv("DB_NAME", "tyrecheck")
 
 
 
