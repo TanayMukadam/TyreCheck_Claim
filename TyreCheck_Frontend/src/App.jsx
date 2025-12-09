@@ -1,42 +1,47 @@
 // src/App.jsx
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import ViewClaim from "./pages/ViewClaim";
-import PrivateRoute from "./routes/PrivateRoute";
+import Summary from "./pages/Summary";
+import ProtectedRoute from "./routes/PrivateRoute";
 import Login from "./pages/Login";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-
-        {/* LOGIN PAGE */}
         <Route path="/" element={<Login />} />
 
-        {/* DASHBOARD (Protected) */}
         <Route
           path="/dashboard"
           element={
-            <PrivateRoute>
+            <ProtectedRoute>
               <Dashboard />
-            </PrivateRoute>
+            </ProtectedRoute>
           }
         />
 
-        {/* VIEW CLAIM PAGE (Protected) */}
         <Route
           path="/claim/:id"
           element={
-            <PrivateRoute>
+            <ProtectedRoute>
               <ViewClaim />
-            </PrivateRoute>
+            </ProtectedRoute>
           }
         />
 
-        {/* ANY UNKNOWN ROUTE → REDIRECT TO LOGIN */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route
+          path="/summary"
+          element={
+            <ProtectedRoute>
+              <Summary />
+            </ProtectedRoute>
+          }
+        />
 
+        {/* fallback route */}
+        <Route path="*" element={<Login />} />
       </Routes>
     </BrowserRouter>
   );

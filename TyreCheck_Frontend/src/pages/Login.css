@@ -1,5 +1,4 @@
-
-/* Main Background */
+/* Login.css — scoped to .login-wrapper */
 .login-wrapper {
   width: 100vw;
   height: 100vh;
@@ -10,8 +9,7 @@
   padding: 1px;
 }
 
-/* Card Layout */
-.login-card {
+.login-wrapper .login-card {
   width: min(1100px, 90vw);
   height: min(760px, 85vh);
   background: #fafafa;
@@ -22,24 +20,23 @@
   transition: 0.3s ease-in-out;
 }
 
-/* Left Section (NOW FULLY CENTER ALIGNED & DYNAMIC) */
-.left-section {
+.login-wrapper .left-section {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;    /* Center vertically */
-  align-items: center;        /* Center horizontally */
+  justify-content: center;
+  align-items: center;
   padding: 40px 50px;
   min-width: 300px;
   box-sizing: border-box;
 }
 
-.login-logo {
+.login-wrapper .login-logo {
   width: 250px;
   margin-bottom: 25px;
 }
 
-.title {
+.login-wrapper .title {
   font-size: 30px;
   font-weight: 800;
   margin-bottom: 20px;
@@ -47,7 +44,7 @@
   text-align: center;
 }
 
-.input-box {
+.login-wrapper .input-box {
   width: 88%;
   padding: 14px;
   margin: 12px 0;
@@ -56,7 +53,7 @@
   font-size: 15px;
 }
 
-.btn-login {
+.login-wrapper .btn-login {
   width: 95%;
   margin-top: 20px;
   padding: 14px;
@@ -69,21 +66,18 @@
   font-weight: 600;
 }
 
-.btn-login:hover {
+.login-wrapper .btn-login:hover {
   background: #4c6630;
 }
 
-/* Right Section (NOW FULL IMAGE AREA) */
-.right-section {
+.login-wrapper .right-section {
   flex: 1.25;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-image: url("../assets/tyre.png"); /* update with your actual file */
+  background-image: url("../assets/tyre.png");
 }
 
-/* Hide <img> because background handles it */
-.hero-img {
+.login-wrapper .hero-img {
   display: none;
 }
-

@@ -1,25 +1,22 @@
-/* Page base */
+/* ViewClaim.css — scoped to .view-page */
 .view-page,
 .view-page * {
   box-sizing: border-box;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
-/* ---------- Topbar (same as dashboard) ---------- */
-.topbar {
+/* Topbar */
+.view-page .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 14px 28px;
 }
-
-.topbar-logo { width: 90px; display: flex; align-items: center; }
-.logo-img { max-width: 100%; height: auto; object-fit: contain; display: block; }
-
-.topbar-title { font-size: 20px; font-weight: 700; color: #222; text-align: center; font-family: Georgia; }
-.topbar-right { display: flex; align-items: center; gap: 12px; }
-
-.logout-btn {
+.view-page .topbar-logo { width: 90px; display: flex; align-items: center; }
+.view-page .logo-img { max-width: 100%; height: auto; object-fit: contain; display: block; }
+.view-page .topbar-title { font-size: 20px; font-weight: 700; color: #222; text-align: center; font-family: Georgia; }
+.view-page .topbar-right { display: flex; align-items: center; gap: 12px; }
+.view-page .logout-btn {
   background: #e74c3c;
   color: #fff;
   padding: 8px 14px;
@@ -29,8 +26,8 @@
   font-weight: 600;
 }
 
-/* ---------- Table Section (uses same look & spacing as dashboard) ---------- */
-.table-section {
+/* Table Section */
+.view-page .table-section {
   width: 100%;
   padding: 40px 0;
   background-position: center;
@@ -38,10 +35,9 @@
   background-size: cover;
 }
 
-/* table-card holds the white table area above the background */
-.table-card {
-  width: 100%;
-  max-width: 90%;
+.view-page .table-card {
+  width: 90%;
+  max-width: 100%;
   margin: 0 auto;
   background: rgba(255,255,255,0.98);
   border-radius: 12px;
@@ -50,8 +46,7 @@
   overflow-x: auto;
 }
 
-/* modern table look */
-.claims-table {
+.view-page .claims-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0 12px;
@@ -59,44 +54,47 @@
   min-width: 920px;
 }
 
-.claims-table thead th {
+.view-page .claims-table thead th {
   color: #050505;
+  font-family: 'Times New Roman', Times, serif;
   font-size: 15px;
   font-weight: 600;
   text-align: left;
   padding: 12px 14px;
 }
 
-.claims-table tbody tr {
+.view-page .claims-table tbody tr {
   background: #ececec;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(10, 10, 10, 0.03);
 }
 
-.claims-table tbody td {
+.view-page .claims-table tbody td {
   padding: 12px 14px;
+  font-family: 'Times New Roman', Times, serif;
+  font-weight: 520;
   vertical-align: middle;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-  font-size: 14px;
+  font-size: 16px;
   color: #222;
 }
 
 /* single image column */
-.single-image-wrap {
+.view-page .single-image-wrap {
   display: flex;
   gap: 8px;
   align-items: center;
 }
 
-.image-label {
+.view-page .image-label {
   font-size: 15px;
   color: #666;
   width: 64px;
 }
 
-.image-thumb-large {
+.view-page .image-thumb-large {
   width: 200px;
   height: 200px;
   background: #f2f2f2;
@@ -109,7 +107,7 @@
   border: 1px solid #e6e6e6;
 }
 
-.image-thumb-large img {
+.view-page .image-thumb-large img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -117,7 +115,7 @@
 }
 
 /* Edit AI text area */
-.edit-ai-box {
+.view-page .edit-ai-box {
   width: 100%;
   min-height: 70px;
   padding: 8px 10px;
@@ -128,7 +126,7 @@
 }
 
 /* simple input for remark */
-.lead-input {
+.view-page .lead-input {
   padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid #e6e6e6;
@@ -137,7 +135,7 @@
 }
 
 /* buttons & selects */
-.view-action {
+.view-page .view-action {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -150,7 +148,7 @@
   font-weight: 600;
 }
 
-.select-input {
+.view-page .select-input {
   padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid #d8d8d8;
@@ -159,7 +157,7 @@
 }
 
 /* submit button */
-.search-action-btn {
+.view-page .search-action-btn {
   background: #6a8b3e;
   color: #fff;
   padding: 10px 26px;
@@ -169,9 +167,8 @@
   font-weight: 600;
 }
 
-/* ---------- Modal (zoomed preview) ---------- */
-
-.modal-backdrop {
+/* Modal (zoomed preview) */
+.view-page .modal-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(10,10,10,0.55);
@@ -182,8 +179,7 @@
   padding: 20px;
 }
 
-/* make modal much wider and taller so image can be large */
-.modal-window {
+.view-page .modal-window {
   width: 92%;
   max-width: 1200px;
   height: 86vh;
@@ -197,8 +193,7 @@
   overflow: hidden;
 }
 
-/* modal header/title */
-.modal-window h3 {
+.view-page .modal-window h3 {
   margin: 0;
   font-size: 16px;
   text-align: left;
@@ -206,8 +201,7 @@
   color: #222;
 }
 
-/* container that holds the image and provides scroll/pan if needed */
-.modal-image-wrap {
+.view-page .modal-image-wrap {
   flex: 1 1 auto;
   display: flex;
   align-items: center;
@@ -218,8 +212,7 @@
   border-radius: 8px;
 }
 
-/* larger image styles — fill the area while preserving aspect ratio */
-.modal-image-wrap img {
+.view-page .modal-image-wrap img {
   max-width: 100%;
   max-height: 100%;
   width: auto;
@@ -231,24 +224,19 @@
   cursor: zoom-in;
 }
 
-
-
-/* class used when click-to-toggle zoom is active (JS adds 'zoomed' via className) */
-.modal-image-wrap img.zoomed {
+.view-page .modal-image-wrap img.zoomed {
   transform: scale(2.6) !important;
   cursor: zoom-out !important;
 }
 
-/* controls row */
-.modal-window .modal-controls {
+.view-page .modal-window .modal-controls {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
   align-items: center;
 }
 
-/* control buttons */
-.modal-btn {
+.view-page .modal-btn {
   padding: 8px 12px;
   border-radius: 8px;
   border: none;
@@ -257,82 +245,64 @@
   background: #f1f1f1;
 }
 
-.modal-btn.primary {
+.view-page .modal-btn.primary {
   background: #6a8b3e;
   color: #fff;
 }
 
 /* responsive adjustments */
 @media (max-width: 900px) {
-  .claims-table { min-width: 820px; }
-  .image-thumb-large { width: 92px; height: 66px; }
+  .view-page .claims-table { min-width: 820px; }
+  .view-page .image-thumb-large { width: 92px; height: 66px; }
 }
 
 @media (max-width: 640px) {
-  .table-card { padding: 8px; }
-  .claims-table { min-width: 680px; }
-  .edit-ai-box { min-height: 90px; }
+  .view-page .table-card { padding: 8px; }
+  .view-page .claims-table { min-width: 680px; }
+  .view-page .edit-ai-box { min-height: 90px; }
 
-  .modal-window {
+  .view-page .modal-window {
     width: 100%;
     max-width: 100%;
     height: 92vh;
     padding: 10px;
     border-radius: 8px;
   }
-  /* avoid hover/active zoom on touch devices */
-  .modal-image-wrap img:hover,
-  .modal-image-wrap img:active {
+  .view-page .modal-image-wrap img:hover,
+  .view-page .modal-image-wrap img:active {
     transform: none;
     cursor: default;
   }
 }
-/* Make image column wider */
-.claims-table td:nth-child(1),
-.claims-table th:nth-child(1) {
+
+/* column width helpers (scoped) */
+.view-page .claims-table td:nth-child(1),
+.view-page .claims-table th:nth-child(1) {
   width: 320px !important;
 }
-
-/* AI Result column slightly wider */
-.claims-table td:nth-child(2),
-.claims-table th:nth-child(2) {
+.view-page .claims-table td:nth-child(2),
+.view-page .claims-table th:nth-child(2) {
   width: 300px !important;
   white-space: normal !important;
 }
-
-/* Edited AI Result column */
-.claims-table td:nth-child(3),
-.claims-table th:nth-child(3) {
+.view-page .claims-table td:nth-child(3),
+.view-page .claims-table th:nth-child(3) {
   width: 250px !important;
 }
-
-/* Request Date & Remark keep moderate width */
-.claims-table td:nth-child(4),
-.claims-table th:nth-child(4) {
+.view-page .claims-table td:nth-child(4),
+.view-page .claims-table th:nth-child(4) {
   width: 160px !important;
 }
-
-.claims-table td:nth-child(5),
-.claims-table th:nth-child(5) {
+.view-page .claims-table td:nth-child(5),
+.view-page .claims-table th:nth-child(5) {
   width: 220px !important;
 }
-
-/* Address column */
-.claims-table td:nth-child(6),
-.claims-table th:nth-child(6) {
-  width: 200px !important;
+.view-page .claims-table td:nth-child(6),
+.view-page .claims-table th:nth-child(6) {
+  width: 220px !important;
   white-space: normal !important;
 }
-
-/* AI Status column — shift right by narrowing last column */
-.claims-table td:nth-child(7),
-.claims-table th:nth-child(7) {
-  width: 120px !important;
-  text-align: center !important;
-}
-
-/* AI % dropdown column */
-.claims-table td:nth-child(8),
-.claims-table th:nth-child(8) {
-  width: 120px !important;
+.view-page .claims-table td:nth-child(7),
+.view-page .claims-table th:nth-child(7) {
+  width: 200px !important;
 }

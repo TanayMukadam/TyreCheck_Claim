@@ -61,7 +61,7 @@ const Dashboard = () => {
   // token from localStorage
   const token = localStorage.getItem("access_token");
 
-  // Fetch page from backend (server-side pagination)
+  // Fetch page from backend (server-side)
   useEffect(() => {
     const fetchPage = async () => {
       setLoading(true);
@@ -164,6 +164,11 @@ const Dashboard = () => {
     navigate("/", { replace: true });
   };
 
+  // redirect to summary page
+  const goToSummary = () => {
+    navigate("/summary");
+  };
+
   // pagination handlers using backendTotalPages
   const goToPage = (n) => {
     const page = Math.min(Math.max(1, n), backendTotalPages || 1);
@@ -245,6 +250,15 @@ const Dashboard = () => {
         <div className="topbar-title">Tyre Check Claim</div>
 
         <div className="topbar-right">
+          <button
+            className="logout-btn"
+            onClick={goToSummary}
+            aria-label="Go to summary page"
+            style={{ marginRight: 8 }}
+          >
+            Summary
+          </button>
+
           <button className="logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </header>
