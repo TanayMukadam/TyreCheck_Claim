@@ -7,7 +7,7 @@ from fastapi.params import Depends
 #Routing
 from Routes.userRoutes import public_user_router
 from Routes.claimRoutes import protected_user_router
-
+from Routes.viewClaimRoutes import protected_claimView_route
 
 #Access Route
 from Utils.auth import get_current_user
@@ -22,6 +22,7 @@ app.add_middleware(
 )
 app.include_router(public_user_router, prefix="/auth")
 app.include_router(protected_user_router, prefix="/auth")
+app.include_router(protected_claimView_route, prefix="/auth")
 
 
 @app.get('/')

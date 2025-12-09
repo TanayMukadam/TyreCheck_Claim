@@ -13,9 +13,6 @@ db_name = os.environ.get("DB_NAME")
 
 
 
-
-
-
 url_link = f"mysql+pymysql://{db_username}:{db_password}@{db_host}/{db_name}"
 
 engine = create_engine(url_link, echo=True)
