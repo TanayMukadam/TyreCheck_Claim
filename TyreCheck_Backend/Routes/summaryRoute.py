@@ -68,6 +68,8 @@ def normalize(value):
 async def summary_report(filters: SummaryFilter, db: Session = Depends(get_db)):
 
     try:
+        print("Dealer Code ->>>", filters.dealer_code)
+        # print("Dealer Name ->>>", filters)
         servicetype = "claim"
         dealer = normalize(filters.dealer_code)
         from_date = normalize(filters.from_date)

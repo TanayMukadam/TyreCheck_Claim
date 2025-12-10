@@ -20,11 +20,31 @@ const Summary = () => {
   const [mode, setMode] = useState("claim"); 
   const [aiTab, setAiTab] = useState("aiResult"); 
   const [loading, setLoading] = useState(false);
+  const [dealerData, setDealerData] = useState([]);
 
-  const dealers = useMemo(
-    () => ["PANCHSHEELA TYRE...", "JM TYRES", "BALAJI WHEELS"],
-    []
-  );
+  const fetchDealerData = async() => {
+    try {
+      setLoading(true)
+      const token = localStorage.getItem("access_token")
+
+      const response = await fetch(`${tyrecheck_url}/auth/dealers`, {
+        method: "GET",
+        headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          }
+      })
+
+      const result = await response.json()
+      console.log("Get Dealers -->", result)
+      setDealerData(result)
+      setLoading(false)
+    }
+    catch (err) {
+      console.log(err)
+      setLoading(false);
+    }
+    
+  }
 
   const goToDashboard = () => navigate("/dashboard");
   const handleLogout = () => {
@@ -71,6 +91,7 @@ const Summary = () => {
 
   // Load default report without filters
   useEffect(() => {
+    fetchDealerData();
     fetchSummaryData({});
   }, []);
 
@@ -144,11 +165,11 @@ const Summary = () => {
                 onChange={(e) => setDealerFilter(e.target.value)}
               >
                 <option value="">All Dealers</option>
-                {dealers.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
+                {dealerData.map((item) => (
+                <option key={item.ID} value={item.Dealer_code}>
+                  {item.Dealer_name}
+                </option>
+              ))}
               </select>
             </div>
 

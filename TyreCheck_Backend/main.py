@@ -10,6 +10,7 @@ from Routes.userRoutes import public_user_router
 from Routes.claimRoutes import protected_user_router
 from Routes.viewClaimRoutes import protected_claimView_route
 from Routes.summaryRoute import protected_summary_route
+from Routes.dealersRoute import protected_dealer_route
 #Access Route
 from Utils.auth import get_current_user
 
@@ -30,6 +31,7 @@ app.include_router(public_user_router, prefix="/auth")
 app.include_router(protected_user_router, prefix="/auth")
 app.include_router(protected_claimView_route, prefix="/auth")
 app.include_router(protected_summary_route, prefix="/auth")
+app.include_router(protected_dealer_route, prefix="/auth")
 
 @app.get('/')
 async def root():
