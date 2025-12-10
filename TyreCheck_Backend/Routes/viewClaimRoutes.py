@@ -5,6 +5,8 @@ from sqlalchemy import text
 from Utils.auth import get_current_user
 import logging
 
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -14,36 +16,31 @@ protected_claimView_route = APIRouter(
     dependencies=[Depends(get_current_user)]
 )
 
-# #claim_id = ROH2/25/045866
-# @protected_claimView_route.get("/Claim_ID={claim_id}")
-# async def claimViewRoute(claim_id: str, db: Session = Depends(get_db)):
-    
-#     if not claim_id:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"message": "Claim ID Record not found"})
-    
-#     sql = text("CALL tyrecheck.USP_GetTyreDetailsFromWarranty_ClaimNo(:claim_id)")
-#     result = db.execute(sql, {"claim_id": claim_id})
-#     data = result.fetchall()
-    
-#     columns = result.keys()
-#     response = [dict(zip(columns, row)) for row in data]
-    
-#     return response
+
 
 @protected_claimView_route.get("/Claim_ID={claim_id:path}")
 async def claimViewRoute(claim_id: str, db: Session = Depends(get_db)):
-    
+
     if not claim_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail={"message": "Claim ID Record not found"}
         )
-    
+
+    # Call stored procedure to get claim details
     sql = text("CALL tyrecheck.USP_GetTyreDetailsFromWarranty_ClaimNo(:claim_id)")
     result = db.execute(sql, {"claim_id": claim_id})
     data = result.fetchall()
-    
     columns = result.keys()
+
+    # Convert SQL rows to list of dicts
     response = [dict(zip(columns, row)) for row in data]
-    
+
+    # Optional: check if any data returned
+    if not response:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"message": f"No records found for Claim ID {claim_id}"}
+        )
+
     return response

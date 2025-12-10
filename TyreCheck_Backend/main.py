@@ -3,7 +3,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from fastapi.params import Depends
-
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
 #Routing
 from Routes.userRoutes import public_user_router
 from Routes.claimRoutes import protected_user_router
@@ -20,6 +21,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+shared_folder_path = Path(__file__).parent.parent / "Shared_Folder"
+
+# Mount images folder
+app.mount("/protected_claim/images", StaticFiles(directory=shared_folder_path), name="images")
+
 app.include_router(public_user_router, prefix="/auth")
 app.include_router(protected_user_router, prefix="/auth")
 app.include_router(protected_claimView_route, prefix="/auth")
