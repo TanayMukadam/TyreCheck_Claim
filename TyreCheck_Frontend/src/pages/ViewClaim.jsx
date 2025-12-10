@@ -180,7 +180,7 @@ setRows(mappedRows);
   };
 
   return (
-    <div className="view-page">
+    <div className="view-page" style={{background: "linear-gradient(to bottom, #e9efe8 0%, #c7d9b0 40%, #8eb66a 100%)",}}>
       {/* Top Bar */}
       <header className="topbar">
         <div className="topbar-logo">
@@ -194,7 +194,7 @@ setRows(mappedRows);
       </header>
 
       {/* Table Section */}
-      <section className="table-section" style={{ backgroundImage: `url(${BgImage})` }}>
+      <section className="table-section">
         <div className="table-card">
           <h3 style={{ textAlign: "center", margin: "8px 0 12px " }}>
             Warranty/Claim No. <strong style={{ textAlign: "center", margin: "8px 0 12px",backgroundColor:"#f0f000" }}>{claimMeta.id}</strong>
@@ -240,7 +240,7 @@ setRows(mappedRows);
                       {/* <td style={{ whiteSpace: "normal", maxWidth: 320 }}>{r.aiResult}</td> */}
                       <td className="wrap-date">
                         <div>{r.aiResult.defect}</div>
-                        <div style={{width:"70%",color:"#000",marginTop:"5%" , fontWeight:'10px'}}>
+                        <div style={{width:"100%",color:"#000",marginTop:"5%"}}>
                           <strong>{r.aiResult.finalDefect}</strong>
                         </div>
                       </td>

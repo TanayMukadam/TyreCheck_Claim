@@ -1,8 +1,8 @@
 /* Dashboard.css — scoped to .dashboard-page */
 .dashboard-page,
 .dashboard-page * {
-  box-sizing: border-box;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  box-sizing:content-box;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial
 }
 
 /* ---------- Topbar ---------- */
@@ -157,9 +157,9 @@
 .dashboard-page .claims-table thead th {
   color: #000000;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  text-align: left;
+  text-align: center;
   padding: 12px 30px;
 }
 
@@ -176,8 +176,9 @@
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-  font-size: 18px;
+  font-size: 16px;
   color: #222;
+  text-align: center;
 }
 
 .dashboard-page .left-align { text-align: left; }
@@ -226,12 +227,19 @@
 }
 
 /* Search Form scoped */
-.dashboard-page .search-form { width: 100%; max-width: 1200px; margin: 8px auto 0; padding: 0; }
+.dashboard-page .search-form { width: 100%; max-width: 1200px; margin: 8px auto 0; }
 .dashboard-page .form-row { display: flex; gap: 16px; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; }
-.dashboard-page .form-group { display: flex; flex-direction: column; gap: 6px; min-width: 160px; flex: 1 1 180px; box-sizing: border-box; }
+.dashboard-page .form-group { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 6px ; 
+    min-width: 230px; 
+    flex: 1 1 120px;
+    box-sizing: border-box; 
+    }
 .dashboard-page .form-label { font-size: 13px; color: #555; font-weight: 600; margin-left: 4px; }
-.dashboard-page .lead-input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #e6e8eb; font-size: 15px; box-sizing: border-box; }
-.dashboard-page .date-input, .dashboard-page .select-input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #d8d8d8; font-size: 14px; box-sizing: border-box; }
+.dashboard-page .lead-input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #e6e8eb; font-size: 18px; box-sizing: border-box;}
+.dashboard-page .date-input, .dashboard-page .select-input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #d8d8d8; font-size: 14px; box-sizing: border-box; }
 .dashboard-page .btn-group { display: flex; align-items: center; justify-content: center; }
 
 /* responsive adjustments */
@@ -255,4 +263,10 @@
   .dashboard-page .search-action-row { margin-top: 8px; }
   .dashboard-page .applied-range { display: block; text-align: center; margin-top: 10px; }
   .dashboard-page .claims-table { min-width: 720px; }
+}
+
+.wrap-date {
+  white-space: normal;
+  text-align: left;
+  line-height: 1.2;
 }
