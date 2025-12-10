@@ -56,7 +56,7 @@ const ViewClaim = () => {
       ? `${tyrecheck_url}/protected_claim/images/${item.folder_name}/${item.Image_name}`
       : null,
   },
-  aiResult: item.ai_result || item.Defect_Result || item.Gauge_reading || "",
+  aiResult: item.ai_result ? item.ai_result : item.Exception_Occurred,
   editAiResult: item.CorrectedValue || "",
   requestDate: item.Request_Date
     ? new Date(item.Request_Date).toLocaleString()
