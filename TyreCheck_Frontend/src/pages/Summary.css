@@ -4,7 +4,7 @@
 .summary-page,
 .summary-page * {
   box-sizing: border-box;
-  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
 /* Topbar */
@@ -66,15 +66,7 @@
   box-shadow: 0 6px 18px rgba(0,0,0,0.04);
 }
 
-/* CENTER BIG VERSION - applied via class center-big */
-.summary-page .segmented.center-big {
-  width: 80%;
-  max-width: 1100px;
-  margin: 18px auto;
-  border-radius: 40px;
-  background: linear-gradient(#ffffff, #f3f8f3);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-}
+
 
 /* small ai segmented style */
 .summary-page .segmented.small { margin: 12px 24px; border-radius: 18px; }
@@ -93,9 +85,10 @@
 
 /* big buttons (inside center-big) */
 .summary-page .segmented.center-big .seg-btn {
-  padding: 18px 36px;
+  padding: 18px 90px;
+  margin-right: 1%;
   font-size: 18px;
-  min-width: 260px;
+  min-width: 280px;
   border-radius: 40px;
 }
 
