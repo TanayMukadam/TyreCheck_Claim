@@ -241,7 +241,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="dashboard-page">
+    <div className="dashboard-page" style={{background: "linear-gradient(to bottom, #e9efe8 0%, #c7d9b0 40%, #8eb66a 100%)",}}>
       <header className="topbar">
         <div className="topbar-logo">
           <img src={Logo} alt="Company logo" className="logo-img" />
@@ -321,7 +321,7 @@ const Dashboard = () => {
         </form>
       </div>
 
-      <section className="table-section" style={{ backgroundImage: `url(${BgImage})` }}>
+      <section className="table-section" >
         <div className="table-card">
           {loading ? (
             <div className="loading">Loading...</div>
@@ -332,7 +332,6 @@ const Dashboard = () => {
               <table className="claims-table">
                 <thead>
                   <tr>
-                    
                     <th>Claim Warranty ID</th>
                     <th>Dealer Name</th>
                     <th>Claim Type</th>
@@ -352,7 +351,7 @@ const Dashboard = () => {
                       <tr key={`${row.id}-${(currentPage - 1) * rowsPerPage + i}`}>
                         
                         <td>{row.id}</td>
-                        <td>{row.dealer}</td>
+                        <td >{row.dealer}</td>
                         <td>{row.claimType}</td>
                         <td>{row.claimWarrantyDate || "-"}</td>
                         <td>{row.processedTime}</td>
