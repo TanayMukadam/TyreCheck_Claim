@@ -27,3 +27,34 @@ class PaginatedClaimSPResponse(BaseModel):
     per_page: int
     total: int
     total_pages: int
+    
+    
+    
+class SummaryFilter(BaseModel):
+    servicetype: Optional[str] = None
+    dealer_code: Optional[str] = None
+    from_date: Optional[str] = None
+    to_date: Optional[str] = None
+
+
+# --------------------------
+# Response Models
+# --------------------------
+class PercentageReportItem(BaseModel):
+    ServiceType: Optional[str]
+    Percentage: Optional[float]
+    DealerCode: Optional[str]
+    TotalCount: Optional[int]
+
+
+class OverallSummary(BaseModel):
+    Overall: Optional[float]
+    WarrantyCount: Optional[int]
+
+
+# --------------------------
+# Response Wrapper
+# --------------------------
+class SummaryResult(BaseModel):
+    percentage_report: List[PercentageReportItem]
+    overall_summary: List[OverallSummary]

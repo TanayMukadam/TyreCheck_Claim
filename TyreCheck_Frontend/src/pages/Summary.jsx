@@ -1,35 +1,30 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/Logo.png";
 import BgImage from "../assets/bg.png";
 import "./Summary.css";
+import tyrecheck_url from "../constants/tyrecheck.constants.js";
 
 const Summary = () => {
   const navigate = useNavigate();
 
   // filters
-  const [leadId, setLeadId] = useState("");
   const [filterStartDate, setFilterStartDate] = useState("");
   const [filterEndDate, setFilterEndDate] = useState("");
   const [dealerFilter, setDealerFilter] = useState("");
 
+  const [overallreportData, setOverallReportData] = useState(null);
+  const [summarydata, setSummaryData] = useState(null);
+
   // mode & tab
-  const [mode, setMode] = useState("claim"); // warranty | claim
-  const [aiTab, setAiTab] = useState("aiResult"); // aiResult | aiSummary
-  const [loading] = useState(false);
+  const [mode, setMode] = useState("claim"); 
+  const [aiTab, setAiTab] = useState("aiResult"); 
+  const [loading, setLoading] = useState(false);
 
-  // sample summary (replace with real API data)
-  const [summary] = useState({
-    overallPercent: 100,
-    totalCount: 31606,
-    typeStats: [
-      { type: "Defect - Outside", imageCount: 30783, avgAccuracy: 100 },
-      { type: "Gauge Depth", imageCount: 30514, avgAccuracy: 100 },
-      { type: "Defect - Inside", imageCount: 30801, avgAccuracy: 100 },
-    ],
-  });
-
-  const dealers = useMemo(() => ["PANCHSHEELA TYRE...", "JM TYRES", "BALAJI WHEELS"], []);
+  const dealers = useMemo(
+    () => ["PANCHSHEELA TYRE...", "JM TYRES", "BALAJI WHEELS"],
+    []
+  );
 
   const goToDashboard = () => navigate("/dashboard");
   const handleLogout = () => {
@@ -38,13 +33,61 @@ const Summary = () => {
     navigate("/", { replace: true });
   };
 
+  // API CALL
+  const fetchSummaryData = async (bodyData = null) => {
+    try {
+      setLoading(true);
+
+      const token = localStorage.getItem("access_token");
+
+      const response = await fetch(
+        `${tyrecheck_url}/auth/summary/summary_report`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(bodyData || {}),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("API error " + response.status);
+      }
+
+      const result = await response.json();
+
+      console.log("SUMMARY REPORT:", result);
+
+      setSummaryData(result.percentage_report || []);
+      setOverallReportData(result.overall_summary || []);
+      setLoading(false);
+    } catch (err) {
+      console.error("API fetch error:", err);
+      setLoading(false);
+    }
+  };
+
+  // Load default report without filters
+  useEffect(() => {
+    fetchSummaryData({});
+  }, []);
+
   const onSearch = (e) => {
-    e && e.preventDefault();
-    // wire API here if needed
+    e.preventDefault();
+
+    fetchSummaryData({
+      servicetype: "claim",
+      dealer_code: dealerFilter || null,
+      from_date: filterStartDate || null,
+      to_date: filterEndDate || null,
+    });
   };
 
   return (
     <div className="summary-page">
+      {/* HEADER */}
       <header className="topbar">
         <div className="topbar-logo">
           <img src={Logo} alt="logo" className="logo-img" />
@@ -53,7 +96,11 @@ const Summary = () => {
         <div className="topbar-title">Tyre Check Claim - Summary</div>
 
         <div className="topbar-right">
-          <button className="logout-btn" onClick={goToDashboard} style={{ marginRight: 8 }}>
+          <button
+            className="logout-btn"
+            onClick={goToDashboard}
+            style={{ marginRight: 8 }}
+          >
             Dashboard
           </button>
           <button className="logout-btn" onClick={handleLogout}>
@@ -62,20 +109,11 @@ const Summary = () => {
         </div>
       </header>
 
-      {/* Filter card */}
+      {/* FILTER CARD */}
       <div className="search-card">
         <form className="search-card-inner search-form" onSubmit={onSearch}>
           <div className="form-row summary-form-row">
-            <div className="form-group">
-              <label className="form-label">Lead ID</label>
-              <input
-                className="lead-input"
-                placeholder="Enter Lead ID"
-                value={leadId}
-                onChange={(e) => setLeadId(e.target.value)}
-              />
-            </div>
-
+            {/* Start Date */}
             <div className="form-group">
               <label className="form-label">Start Date</label>
               <input
@@ -86,6 +124,7 @@ const Summary = () => {
               />
             </div>
 
+            {/* End Date */}
             <div className="form-group">
               <label className="form-label">End Date</label>
               <input
@@ -96,6 +135,7 @@ const Summary = () => {
               />
             </div>
 
+            {/* Dealer */}
             <div className="form-group">
               <label className="form-label">Dealer</label>
               <select
@@ -112,6 +152,7 @@ const Summary = () => {
               </select>
             </div>
 
+            {/* SEARCH BUTTON */}
             <div className="search-button-wrap">
               <label className="form-label" style={{ visibility: "hidden" }}>
                 search
@@ -124,61 +165,63 @@ const Summary = () => {
         </form>
       </div>
 
-      {/* Centered big Warranty/Claim segmented control */}
+      {/* MODE SWITCH */}
       <div className="mode-center-wrap">
         <div className="segmented center-big">
           <button
             className={`seg-btn ${mode === "warranty" ? "active" : ""}`}
             onClick={() => setMode("warranty")}
-            aria-pressed={mode === "warranty"}
           >
             Warranty
           </button>
           <button
             className={`seg-btn ${mode === "claim" ? "active" : ""}`}
             onClick={() => setMode("claim")}
-            aria-pressed={mode === "claim"}
           >
             Claim
           </button>
         </div>
       </div>
 
-      {/* AI segmented control (small, right-aligned) */}
+      {/* AI TABS */}
       <div className="ai-control-row">
         <div style={{ flex: 1 }} />
         <div className="segmented ai-segmented small">
           <button
             className={`seg-btn ${aiTab === "aiResult" ? "active" : ""}`}
             onClick={() => setAiTab("aiResult")}
-            aria-pressed={aiTab === "aiResult"}
           >
             AI Result
           </button>
           <button
             className={`seg-btn ${aiTab === "aiSummary" ? "active" : ""}`}
             onClick={() => setAiTab("aiSummary")}
-            aria-pressed={aiTab === "aiSummary"}
           >
             AI Summary
           </button>
         </div>
       </div>
 
-      {/* Content */}
-      <section className="table-section" style={{ backgroundImage: `url(${BgImage})` }}>
+      {/* CONTENT SECTION */}
+      <section
+        className="table-section"
+        style={{ backgroundImage: `url(${BgImage})` }}
+      >
         <div className="table-card">
           <h3 style={{ textAlign: "center", marginBottom: 12 }}>
-            Summary — Mode: {mode} • Tab: {aiTab === "aiResult" ? "AI Result" : "AI Summary"}
+            Summary — Mode: {mode} • Tab:{" "}
+            {aiTab === "aiResult" ? "AI Result" : "AI Summary"}
           </h3>
 
-          {/* Warranty empty view */}
-          {mode === "warranty" && <div className="empty-state">No Warranty data to show.</div>}
+          {/* WARRANTY EMPTY */}
+          {mode === "warranty" && (
+            <div className="empty-state">No Warranty data to show.</div>
+          )}
 
-          {/* Claim / AI Result content */}
+          {/* CLAIM - AI RESULT */}
           {mode === "claim" && aiTab === "aiResult" && (
             <div className="summary-content no-donut">
-              {/* Left: overall (now only table) */}
+              {/* Overall Section */}
               <div className="overall-card overall-card-no-donut">
                 <h4>Overall Claim AI Output %</h4>
                 <div className="overall-body overall-body-no-donut">
@@ -191,20 +234,29 @@ const Summary = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td>{summary.overallPercent}</td>
-                          <td>{summary.totalCount}</td>
-                        </tr>
+                        {overallreportData && overallreportData.length > 0 ? (
+                          overallreportData.map((item, idx) => (
+                            <tr key={idx}>
+                              <td>{item.Overall}</td>
+                              <td>{item.WarrantyCount}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="2" style={{ textAlign: "center" }}>
+                              No data available
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
                 </div>
               </div>
 
-              {/* vertical partition */}
               <div className="partition" />
 
-              {/* Right: type wise (bordered table) */}
+              {/* Type wise table */}
               <div className="typewise-card">
                 <h4>Type wise AI output %</h4>
                 <div className="widget">
@@ -221,17 +273,25 @@ const Summary = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {summary.typeStats.map((t) => (
-                        <tr key={t.type}>
-                          <td>{t.type}</td>
-                          <td>{t.imageCount}</td>
-                          <td>{t.avgAccuracy}</td>
-                          <td>{Math.round(t.imageCount * 0.8)}</td>
-                          <td>{Math.round(t.imageCount * 0.12)}</td>
-                          <td>{Math.round(t.imageCount * 0.06)}</td>
-                          <td>{Math.round(t.imageCount * 0.02)}</td>
+                      {summarydata && summarydata.length > 0 ? (
+                        summarydata.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.Type}</td>
+                            <td>{item.TypeCount}</td>
+                            <td>{item.average}%</td>
+                            <td>{item.H100}</td>
+                            <td>{item.H90}</td>
+                            <td>{item.H50}</td>
+                            <td>{item.AINotProcess}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="7" style={{ textAlign: "center" }}>
+                            No data available
+                          </td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -239,7 +299,7 @@ const Summary = () => {
             </div>
           )}
 
-          {/* AI Summary empty view */}
+          {/* AI SUMMARY EMPTY */}
           {mode === "claim" && aiTab === "aiSummary" && (
             <div className="empty-state">AI Summary view intentionally left empty.</div>
           )}
