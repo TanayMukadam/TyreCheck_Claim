@@ -56,11 +56,57 @@ const ViewClaim = () => {
       ? `${tyrecheck_url}/protected_claim/images/${item.folder_name}/${item.Image_name}`
       : null,
   },
-  aiResult: item.ai_result ? item.ai_result : item.Exception_Occurred,
+  // aiResult: item.result_ai ? item.result_ai : item.Exception_Occurred,
+
+  // aiResult: item.result_ai ? (() => {
+  //         const d = item.result_ai;
+  //         const [defect, finalDefect] = d.split("Final Defect:");
+  //         return { defect: defect, finalDefect: finalDefect  };
+  //       })() : item.Exception_Occurred,
+
+    aiResult: item.result_ai
+        ? (() => {
+            const raw = item.result_ai;
+
+            // Split on keyword
+            const parts = raw.split("Final Defect:");
+
+            // If Final Defect exists
+            if (parts.length > 1) {
+              const defect = parts[0].trim();
+              const finalDefectValue = parts[1].trim();
+
+              return {
+                defect: defect,
+                finalDefect: `Final Defect: ${finalDefectValue}`,
+              };
+            }
+
+            // If no Final Defect exists
+            return {
+              defect: raw,
+              finalDefect: "",
+            };
+          })()
+        : {
+            defect: item.Exception_Occurred,
+            finalDefect: "",
+          },
+
+
+
   editAiResult: item.CorrectedValue || "",
+  // requestDate: item.Request_Date
+  //   ? new Date(item.Request_Date).toLocaleString()
+  //   : "",
   requestDate: item.Request_Date
-    ? new Date(item.Request_Date).toLocaleString()
-    : "",
+      ? (() => {
+          const d = new Date(item.Request_Date).toLocaleString();
+          const [date, time] = d.split(",");
+          return { date: date.trim(), time: time.trim() };
+        })()
+      : { date: "", time: "" },
+
   remark: item.Remark || "",
   address: item.Address || "",
   aiStatusJson: item.ai_api_output
@@ -86,6 +132,10 @@ setRows(mappedRows);
     localStorage.removeItem("isAuth");
     localStorage.removeItem("access_token");
     navigate("/", { replace: true });
+  };
+
+  const handleBack = () => {
+    navigate("/dashboard", { replace: true });
   };
 
   const updateEditAi = (index, text) => {
@@ -138,6 +188,7 @@ setRows(mappedRows);
         </div>
         <div className="topbar-title">Tyre Check Claim</div>
         <div className="topbar-right">
+          <button className="logout-btn" onClick={handleBack}>Back</button>
           <button className="logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </header>
@@ -145,10 +196,9 @@ setRows(mappedRows);
       {/* Table Section */}
       <section className="table-section" style={{ backgroundImage: `url(${BgImage})` }}>
         <div className="table-card">
-          <h3 style={{ textAlign: "center", margin: "8px 0 12px" }}>
-            Warranty/Claim No. <strong>{claimMeta.id}</strong>
+          <h3 style={{ textAlign: "center", margin: "8px 0 12px " }}>
+            Warranty/Claim No. <strong style={{ textAlign: "center", margin: "8px 0 12px",backgroundColor:"#f0f000" }}>{claimMeta.id}</strong>
           </h3>
-
           {loading ? (
             <p style={{ textAlign: "center" }}>Loading...</p>
           ) : error ? (
@@ -162,7 +212,6 @@ setRows(mappedRows);
                   <th>Edited AI Result</th>
                   <th>Request Date</th>
                   <th>Remark</th>
-                  <th>Address</th>
                   <th>AI Status</th>
                   <th>AI Result (%)</th>
                 </tr>
@@ -188,7 +237,13 @@ setRows(mappedRows);
                           </div>
                         </div>
                       </td>
-                      <td style={{ whiteSpace: "normal", maxWidth: 320 }}>{r.aiResult}</td>
+                      {/* <td style={{ whiteSpace: "normal", maxWidth: 320 }}>{r.aiResult}</td> */}
+                      <td className="wrap-date">
+                        <div>{r.aiResult.defect}</div>
+                        <div style={{width:"70%",color:"#000",marginTop:"5%" , fontWeight:'10px'}}>
+                          <strong>{r.aiResult.finalDefect}</strong>
+                        </div>
+                      </td>
                       <td>
                         <textarea
                           className="edit-ai-box"
@@ -197,7 +252,11 @@ setRows(mappedRows);
                           placeholder="Edit AI result..."
                         />
                       </td>
-                      <td>{r.requestDate}</td>
+                      {/* <td>{r.requestDate}</td> */}
+                      <td className="wrap-date">
+                        <div>{r.requestDate.date}</div>
+                        <div>{r.requestDate.time}</div>
+                      </td>
                       <td>
                         <input
                           className="lead-input"
@@ -213,9 +272,9 @@ setRows(mappedRows);
                           placeholder="Remark"
                         />
                       </td>
-                      <td style={{ whiteSpace: "normal", maxWidth: 220 }}>{r.address}</td>
-                      <td>
-                        <button className="view-action" onClick={() => openJsonModal(r.aiStatusJson)}>View</button>
+                      {/* <td style={{ whiteSpace: "normal", maxWidth: 220 }}>{r.address}</td> */}
+                      <td >
+                        <button className="view-action"  onClick={() => openJsonModal(r.aiStatusJson)}>View</button>
                       </td>
                       <td>
                         <select
@@ -277,7 +336,7 @@ setRows(mappedRows);
             <pre style={{ maxHeight: 360, overflow: "auto", background: "#f6f6f6", padding: 12, borderRadius: 8 }}>
               {JSON.stringify(jsonPayload, null, 2)}
             </pre>
-            <button className="modal-btn close" onClick={() => setJsonModalOpen(false)} style={{ width: "100%" }}>Close</button>
+            <button className="modal-btn close" onClick={() => setJsonModalOpen(false)} style={{ width: "30%", alignSelf:'center',backgroundColor: "#FF0000",color: "#FFF"}}>Close</button>
           </div>
         </div>
       )}

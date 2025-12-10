@@ -332,7 +332,7 @@ const Dashboard = () => {
               <table className="claims-table">
                 <thead>
                   <tr>
-                    <th>Sr. No.</th>
+                    
                     <th>Claim Warranty ID</th>
                     <th>Dealer Name</th>
                     <th>Claim Type</th>
@@ -350,7 +350,7 @@ const Dashboard = () => {
                   ) : (
                     tableData.map((row, i) => (
                       <tr key={`${row.id}-${(currentPage - 1) * rowsPerPage + i}`}>
-                        <td>{(currentPage - 1) * rowsPerPage + i + 1}</td>
+                        
                         <td>{row.id}</td>
                         <td>{row.dealer}</td>
                         <td>{row.claimType}</td>
