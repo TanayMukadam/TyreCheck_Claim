@@ -35,7 +35,7 @@ const Summary = () => {
       })
 
       const result = await response.json()
-      console.log("Get Dealers -->", result)
+      // console.log("Get Dealers -->", result)
       setDealerData(result)
       setLoading(false)
     }
@@ -78,7 +78,7 @@ const Summary = () => {
 
       const result = await response.json();
 
-      console.log("SUMMARY REPORT:", result);
+      // console.log("SUMMARY REPORT:", result);
 
       setSummaryData(result.percentage_report || []);
       setOverallReportData(result.overall_summary || []);

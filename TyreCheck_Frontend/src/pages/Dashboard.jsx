@@ -79,7 +79,7 @@ const Dashboard = () => {
 
       const result = await response.json();
       setDealerData(result);
-      console.log("Dealer Data:", result);
+      // console.log("Dealer Data:", result);
     } catch (error) {
       console.log(error);
       setError("Failed to load dealers");

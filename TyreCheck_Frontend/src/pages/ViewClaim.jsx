@@ -45,7 +45,7 @@ const ViewClaim = () => {
         );
 
         const result = await response.json();
-        console.log("🔵 API Response:", result);
+        // console.log("🔵 API Response:", result);
 
         // map API response to table rows
         const mappedRows = (result || []).map((item, idx) => ({
@@ -115,7 +115,7 @@ const ViewClaim = () => {
   aiPercentage: item.Result_percentage?.toString() || "0",
 }));
 
-console.log("--- Mapped Rows:", mappedRows);
+// console.log("--- Mapped Rows:", mappedRows);
 setRows(mappedRows);
       } catch (err) {
         console.error("❌ API Error:", err);
@@ -175,7 +175,7 @@ setRows(mappedRows);
   };
 
   const handleSubmit = () => {
-    console.log("Submit rows:", rows);
+    // console.log("Submit rows:", rows);
     navigate("/dashboard");
   };
 

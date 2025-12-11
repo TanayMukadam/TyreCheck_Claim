@@ -31,7 +31,7 @@ export default function Login() {
     }
 
     const data = await response.json();
-    console.log("Login Response:", data);
+    // console.log("Login Response:", data);
 
     localStorage.setItem("access_token", data.access_token);
     navigate("/dashboard");
