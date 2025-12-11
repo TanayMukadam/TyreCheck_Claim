@@ -300,3 +300,37 @@
   margin: 0;
   padding: 0;
 }
+
+/* Align and space both buttons */
+.dashboard-page .action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* Shared structure for icon buttons */
+.dashboard-page .search-btn,
+.dashboard-page .export-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 28px; /* Makes both equal width & height */
+  font-size: 15px;
+}
+
+/* Search icon style */
+.dashboard-page .search-icon {
+  font-size: 19px;
+  margin: 0;
+  /* margin-right: 7%; */
+  padding: 0;
+}
+
+/* Export icon style */
+.dashboard-page .export-icon {
+  font-size: 18px;
+  margin: 0;
+  padding: 0;
+}

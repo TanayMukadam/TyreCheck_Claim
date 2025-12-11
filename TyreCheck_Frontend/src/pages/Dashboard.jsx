@@ -3,7 +3,7 @@ import { FaEye } from "react-icons/fa";
 import { RiFileExcel2Line } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/Logo.png";
-import BgImage from "../assets/bg.png";
+import { IoIosSearch } from "react-icons/io";
 import "./Dashboard.css";
 import tyrecheck_url from "../constants/tyrecheck.constants";
 
@@ -350,8 +350,9 @@ const Dashboard = () => {
             </div>
 
             <div className="btn-group action-buttons">
-              <button type="submit" className="search-action-btn">
-                Search
+              <button type="submit" className="search-action-btn search-btn">
+                <IoIosSearch className="search-icon" />
+                <span>Search</span>
               </button>
 
               <button
