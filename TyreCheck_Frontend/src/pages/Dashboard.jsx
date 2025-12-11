@@ -41,6 +41,7 @@ const Dashboard = () => {
 
   // data & loading / error
   const [tableData, setTableData] = useState([]); // holds current page data from backend
+  const [dealerData, setDealerData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -62,6 +63,36 @@ const Dashboard = () => {
   const token = localStorage.getItem("access_token");
 
   // Fetch page from backend (server-side)
+
+  useEffect(() => {
+  const fetch_Data = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${tyrecheck_url}/auth/dealers`, {
+        method: "GET",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      const result = await response.json();
+      setDealerData(result);
+      console.log("Dealer Data:", result);
+    } catch (error) {
+      console.log(error);
+      setError("Failed to load dealers");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetch_Data();
+}, []);
+
+
+
   useEffect(() => {
     const fetchPage = async () => {
       setLoading(true);
@@ -330,16 +361,21 @@ const Dashboard = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Dealer</label>
-              <select
-                className="select-input"
-                value={dealerFilter}
-                onChange={(e) => setDealerFilter(e.target.value)}
-              >
-                <option value="">All Dealers</option>
-                {dealers.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
+  <label className="form-label">Dealer</label>
+  <select
+    className="select-input"
+    value={dealerFilter}
+    onChange={(e) => setDealerFilter(e.target.value)}
+  >
+    <option value="">All Dealers</option>
+
+    {dealerData.map((d, idx) => (
+      <option key={d.Dealer_code} value={d.Dealer_code}>
+        {d.Dealer_name}
+      </option>
+    ))}
+  </select>
+</div>
 
             <div className="form-group">
               <label className="form-label">Start Date</label>
