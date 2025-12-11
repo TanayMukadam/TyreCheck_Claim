@@ -334,3 +334,88 @@
   margin: 0;
   padding: 0;
 }
+
+
+/* container that holds badge + buttons on same visual row */
+.applied-and-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap; /* allow whole group to wrap on small screens */
+}
+
+/* the badge */
+.applied-range {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #222;
+  border: 1px solid #e0e0e0;
+  white-space: nowrap; /* IMPORTANT: prevents the X from wrapping to new line */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* the text inside the badge can truncate if container is narrow */
+.applied-range .applied-text {
+  max-width: 360px; /* adjust as needed */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 15px;
+}
+
+/* small circular X button */
+.clear-inline-btn {
+  background: #d9534f;
+  border: none;
+  color: #fff;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  border-radius: 50%;
+  margin-left: 5px;
+  margin-bottom: -1px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+
+/* hover/focus states */
+.clear-inline-btn:hover,
+.clear-inline-btn:focus {
+  background: #c9302c;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(201,48,44,0.12);
+}
+
+/* keep buttons grouped to the right on wide screens */
+.btn-group.action-buttons {
+  margin-left: auto; /* push to the far right of .applied-and-actions */
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* On very small screens, allow buttons to wrap under badge */
+@media (max-width: 640px) {
+  .applied-and-actions {
+    align-items: flex-start;
+  }
+  .btn-group.action-buttons {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+}

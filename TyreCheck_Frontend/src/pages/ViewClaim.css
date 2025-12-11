@@ -204,6 +204,15 @@
   color: #222;
 }
 
+
+.wrap-image-type {
+  margin-left: 0;
+  width: 5%
+}
+
+
+
+
 .view-page .modal-image-wrap {
   flex: 1 1 auto;
   display: flex;

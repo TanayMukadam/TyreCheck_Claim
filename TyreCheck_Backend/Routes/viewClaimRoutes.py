@@ -44,3 +44,8 @@ async def claimViewRoute(claim_id: str, db: Session = Depends(get_db)):
         )
 
     return response
+
+
+
+
+# @protected_claimView_route.post()
