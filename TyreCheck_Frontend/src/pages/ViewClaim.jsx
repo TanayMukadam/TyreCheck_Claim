@@ -334,7 +334,7 @@ setRows(mappedRows);
         <div className="modal-backdrop" onClick={() => setJsonModalOpen(false)}>
           <div className="modal-window" onClick={(e) => e.stopPropagation()}>
             <h3>AI Status JSON</h3>
-            <pre style={{ maxHeight: 360, overflow: "auto", background: "#f6f6f6", padding: 12, borderRadius: 8 }}>
+            <pre style={{ maxHeight: "90%", overflow: "auto", background: "#f6f6f6", padding: 12, borderRadius: 8 }}>
               {JSON.stringify(jsonPayload, null, 2)}
             </pre>
             <button className="modal-btn close" onClick={() => setJsonModalOpen(false)} style={{ width: "30%", alignSelf:'center',backgroundColor: "#FF0000",color: "#FFF"}}>Close</button>

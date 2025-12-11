@@ -4,6 +4,7 @@ import Logo from "../assets/Logo.png";
 import BgImage from "../assets/bg.png";
 import "./Summary.css";
 import tyrecheck_url from "../constants/tyrecheck.constants.js";
+import { IoIosSearch } from "react-icons/io";
 
 const Summary = () => {
   const navigate = useNavigate();
@@ -178,9 +179,12 @@ const Summary = () => {
               {/* <label className="form-label" style={{ visibility: "hidden" }}>
                 
               </label> */}
-              <button className="search-action-btn" type="submit">
-                Search
-              </button>
+              <div className="search-button-wrap">
+                <button className="search-action-btn" type="submit">
+                  <IoIosSearch className="search-icon" />
+                  <span style={{fontSize:"17px"}}>Search</span>
+                </button>
+              </div>
             </div>
           </div>
         </form>
