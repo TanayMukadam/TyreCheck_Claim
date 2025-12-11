@@ -29,7 +29,7 @@
 /* Table Section */
 .view-page .table-section {
   width: 100%;
-  padding: 40px 0;
+  /* padding: 40px 0; */
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;

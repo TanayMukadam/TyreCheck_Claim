@@ -112,7 +112,7 @@ const Dashboard = () => {
           // keep both raw and ISO converted date (ISO used for showing and for comparing if needed)
           createdDateRaw: r.CreatedDate ?? null,
           claimWarrantyDate: createdDateToISO(r.CreatedDate) || null,
-          processedTime: r.InspectionTime ?? r.TotalAVG ?? "",
+          processedTime: formatProcessedTime(r.InspectionTime ?? r.TotalAVG ?? ""),
         }));
 
         setTableData(normalized);
@@ -138,6 +138,19 @@ const Dashboard = () => {
     fetchPage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, fetchTrigger]);
+
+  // Convert "0 days 0 hours 0 minutes 5 seconds" → "0m 5s"
+  const formatProcessedTime = (str) => {
+    if (!str) return "";
+
+    const regex = /(\d+)\s*days\s*(\d+)\s*hours\s*(\d+)\s*minutes\s*(\d+)\s*seconds/i;
+    const match = str.match(regex);
+
+    if (!match) return str; // fallback
+
+    const [, , , minutes, seconds] = match;
+    return `${minutes} minutes ${seconds} seconds`;
+  };
 
   // unique dealers for dropdown (populated from current page; consider a dedicated endpoint for full dealer list)
   const dealers = useMemo(() => {
@@ -349,6 +362,10 @@ const Dashboard = () => {
             </div>
             </div>
 
+            <div className="applied-row">
+            {appliedRangeLabel() && <div className="applied-range">{appliedRangeLabel()}</div>}
+          </div>
+
             <div className="btn-group action-buttons">
               <button type="submit" className="search-action-btn search-btn">
                 <IoIosSearch className="search-icon" />
@@ -365,9 +382,7 @@ const Dashboard = () => {
               </button>
             </div>
 
-          <div className="applied-row">
-            {appliedRangeLabel() && <div className="applied-range">{appliedRangeLabel()}</div>}
-          </div>
+          
         </form>
       </div>
 

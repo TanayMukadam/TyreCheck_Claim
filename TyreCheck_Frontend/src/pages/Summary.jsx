@@ -107,7 +107,7 @@ const Summary = () => {
   };
 
   return (
-    <div className="summary-page">
+    <div className="summary-page" style={{background: "linear-gradient(to bottom, #e9efe8 0%, #c7d9b0 40%, #8eb66a 100%)",}}>
       {/* HEADER */}
       <header className="topbar">
         <div className="topbar-logo">
@@ -175,9 +175,9 @@ const Summary = () => {
 
             {/* SEARCH BUTTON */}
             <div className="search-button-wrap">
-              <label className="form-label" style={{ visibility: "hidden" }}>
-                search
-              </label>
+              {/* <label className="form-label" style={{ visibility: "hidden" }}>
+                
+              </label> */}
               <button className="search-action-btn" type="submit">
                 Search
               </button>
@@ -187,7 +187,7 @@ const Summary = () => {
       </div>
 
       {/* MODE SWITCH */}
-      <div className="mode-center-wrap">
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}>
         <div className="segmented center-big">
           <button
             className={`seg-btn ${mode === "warranty" ? "active" : ""}`}
@@ -226,14 +226,9 @@ const Summary = () => {
       {/* CONTENT SECTION */}
       <section
         className="table-section"
-        style={{ backgroundImage: `url(${BgImage})` }}
+        // style={{ backgroundImage: `url(${BgImage})` }}
       >
         <div className="table-card">
-          <h3 style={{ textAlign: "center", marginBottom: 12 }}>
-            Summary — Mode: {mode} • Tab:{" "}
-            {aiTab === "aiResult" ? "AI Result" : "AI Summary"}
-          </h3>
-
           {/* WARRANTY EMPTY */}
           {mode === "warranty" && (
             <div className="empty-state">No Warranty data to show.</div>
@@ -244,11 +239,11 @@ const Summary = () => {
             <div className="summary-content no-donut">
               {/* Overall Section */}
               <div className="overall-card overall-card-no-donut">
-                <h4>Overall Claim AI Output %</h4>
+                <h3>Overall Claim AI Output %</h3>
                 <div className="overall-body overall-body-no-donut">
                   <div className="overall-stats overall-stats-large">
                     <table className="summary-stat-table large bordered">
-                      <thead>
+                      <thead style={{backgroundColor:"#f0f0f0"}}>
                         <tr>
                           <th>Overall %</th>
                           <th>Count</th>
@@ -279,10 +274,10 @@ const Summary = () => {
 
               {/* Type wise table */}
               <div className="typewise-card">
-                <h4>Type wise AI output %</h4>
+                <h3>Type wise AI output %</h3>
                 <div className="widget">
                   <table className="summary-stat-table full-width bordered">
-                    <thead>
+                    <thead style={{backgroundColor:"#f0f0f0"}}>
                       <tr>
                         <th>Type</th>
                         <th>Image Count</th>

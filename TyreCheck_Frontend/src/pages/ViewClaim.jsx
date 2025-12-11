@@ -193,12 +193,13 @@ setRows(mappedRows);
         </div>
       </header>
 
+      <h3 style={{ textAlign: "center" }}>
+            Warranty/Claim No. <strong style={{ textAlign: "center", margin: "8px 0 12px",backgroundColor:"#f0f000" }}>{claimMeta.id}</strong>
+      </h3>
+
       {/* Table Section */}
       <section className="table-section">
         <div className="table-card">
-          <h3 style={{ textAlign: "center", margin: "8px 0 12px " }}>
-            Warranty/Claim No. <strong style={{ textAlign: "center", margin: "8px 0 12px",backgroundColor:"#f0f000" }}>{claimMeta.id}</strong>
-          </h3>
           {loading ? (
             <p style={{ textAlign: "center" }}>Loading...</p>
           ) : error ? (
