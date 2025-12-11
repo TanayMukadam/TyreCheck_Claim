@@ -1,6 +1,6 @@
-// Dashboard.jsx
 import React, { useState, useMemo, useEffect } from "react";
 import { FaEye } from "react-icons/fa";
+import { RiFileExcel2Line } from "react-icons/ri";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/Logo.png";
 import BgImage from "../assets/bg.png";
@@ -240,6 +240,45 @@ const Dashboard = () => {
     setWindowStart(1);
   };
 
+  // Export the currently displayed rows to CSV
+  const exportToCSV = () => {
+    if (!tableData || tableData.length === 0) {
+      alert("No data to export");
+      return;
+    }
+
+    // define headers matching the table columns
+    const headers = [
+      "ClaimWarrantyId",
+      "DealerName",
+      "ClaimType",
+      "ClaimWarrantyDate",
+      "ProcessedTime",
+    ];
+
+    const rows = tableData.map((r) => [
+      r.id ?? "",
+      r.dealer ?? "",
+      r.claimType ?? "",
+      r.claimWarrantyDate ?? r.createdDateRaw ?? "",
+      r.processedTime ?? "",
+    ]);
+
+    const csvContent = [headers.join(","), ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const now = new Date();
+    const ts = now.toISOString().slice(0, 19).replace(/[:T]/g, "-");
+    a.download = `claims_export_page${currentPage}_${ts}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="dashboard-page" style={{background: "linear-gradient(to bottom, #e9efe8 0%, #c7d9b0 40%, #8eb66a 100%)",}}>
       <header className="topbar">
@@ -267,7 +306,7 @@ const Dashboard = () => {
         <form className="search-card-inner search-form" onSubmit={onSearch}>
           <div className="form-row">
             <div className="form-group">
-              <label className="form-label">Lead ID</label>
+              <label className="form-label">Warranty/Claim ID</label>
               <input
                 type="text"
                 className="lead-input"
@@ -275,6 +314,18 @@ const Dashboard = () => {
                 value={leadId}
                 onChange={(e) => setLeadId(e.target.value)}
               />
+            </div>
+
+            <div className="form-group">
+              <label className="form-label">Dealer</label>
+              <select
+                className="select-input"
+                value={dealerFilter}
+                onChange={(e) => setDealerFilter(e.target.value)}
+              >
+                <option value="">All Dealers</option>
+                {dealers.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
             </div>
 
             <div className="form-group">
@@ -296,24 +347,22 @@ const Dashboard = () => {
                 onChange={(e) => setFilterEndDate(e.target.value)}
               />
             </div>
+            </div>
 
-            <div className="form-group">
-              <label className="form-label">Dealer</label>
-              <select
-                className="select-input"
-                value={dealerFilter}
-                onChange={(e) => setDealerFilter(e.target.value)}
+            <div className="btn-group action-buttons">
+              <button type="submit" className="search-action-btn">
+                Search
+              </button>
+
+              <button
+                type="button"
+                className="search-action-btn export-btn"
+                onClick={exportToCSV}
               >
-                <option value="">All Dealers</option>
-                {dealers.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
+                <RiFileExcel2Line className="export-icon" />
+                <span>Export</span>
+              </button>
             </div>
-
-            <div className="form-group btn-group">
-              <label className="form-label" style={{ visibility: "hidden" }}>btn</label>
-              <button className="search-action-btn" onClick={onSearch}>Search</button>
-            </div>
-          </div>
 
           <div className="applied-row">
             {appliedRangeLabel() && <div className="applied-range">{appliedRangeLabel()}</div>}
@@ -349,7 +398,7 @@ const Dashboard = () => {
                   ) : (
                     tableData.map((row, i) => (
                       <tr key={`${row.id}-${(currentPage - 1) * rowsPerPage + i}`}>
-                        
+
                         <td>{row.id}</td>
                         <td >{row.dealer}</td>
                         <td>{row.claimType}</td>

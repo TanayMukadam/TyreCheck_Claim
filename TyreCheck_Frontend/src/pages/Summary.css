@@ -125,7 +125,10 @@
   box-shadow:0 8px 20px rgba(14,20,30,0.06);
   overflow:hidden;
 }
-.summary-page .table-card h3 { margin:8px 0 12px; text-align:center; }
+.summary-page .table-card h3 { 
+  margin:8px 0 12px; 
+  text-align:center; 
+}
 
 /* layout */
 .summary-page .summary-content {

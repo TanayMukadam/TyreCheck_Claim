@@ -125,6 +125,13 @@
   font-weight: 600;
 }
 
+.dashboard-page .export-action-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+  width: 100%;
+}
+
 /* ---------- Table Section ---------- */
 .dashboard-page .table-section {
   width: 100%;
@@ -237,8 +244,8 @@
     flex: 1 1 120px;
     box-sizing: border-box; 
     }
-.dashboard-page .form-label { font-size: 13px; color: #555; font-weight: 600; margin-left: 4px; }
-.dashboard-page .lead-input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #e6e8eb; font-size: 18px; box-sizing: border-box;}
+.dashboard-page .form-label { font-size: 16px; color: #000; font-weight: 600; margin-left: 4px; }
+.dashboard-page .lead-input { width: 100%; padding: 10px 10px; border-radius: 8px; border: 1px solid #e6e8eb; font-size: 16px; box-sizing: border-box;}
 .dashboard-page .date-input, .dashboard-page .select-input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #d8d8d8; font-size: 14px; box-sizing: border-box; }
 .dashboard-page .btn-group { display: flex; align-items: center; justify-content: center; }
 
@@ -247,7 +254,7 @@
   .dashboard-page .main-search { flex-basis: 60%; }
   .dashboard-page .date-input { width: 140px; }
   .dashboard-page .select-input { width: 150px; }
-  .dashboard-page .form-group { flex: 1 1 150px; min-width: 120px; }
+  .dashboard-page .form-group { flex:a 1 1 150px; min-width: 120px; }
 }
 
 @media (max-width: 760px) {
@@ -269,4 +276,27 @@
   white-space: normal;
   text-align: left;
   line-height: 1.2;
+}
+
+
+/* Button group alignment */
+.dashboard-page .action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* Export button icon styling */
+.dashboard-page .export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 26px; /* same as search button */
+}
+
+.dashboard-page .export-icon {
+  font-size: 18px;
+  margin: 0;
+  padding: 0;
 }
