@@ -8,11 +8,6 @@ import "./Dashboard.css";
 import tyrecheck_url from "../constants/tyrecheck.constants";
 import LoaderGif from "../assets/black.gif";
 
-
-/* ---------------------------
-   Helpers
-   ---------------------------*/
-
    
 // Convert backend CreatedDate "dd/MM/yyyy HH:mm" -> ISO date "yyyy-mm-dd"
 const createdDateToISO = (createdDate) => {
@@ -100,9 +95,7 @@ const Dashboard = () => {
 
       return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
     }
-  /* ---------------------------
-     Fetch dealers (once)
-     ---------------------------*/
+ 
   useEffect(() => {
     let isMounted = true;
     const loadDealers = async () => {
@@ -138,9 +131,7 @@ const Dashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ---------------------------
-     Fetch page (when currentPage or fetchTrigger changes)
-     ---------------------------*/
+ 
   useEffect(() => {
     let isMounted = true;
 
@@ -226,9 +217,7 @@ const Dashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, fetchTrigger]);
 
-  /* ---------------------------
-     Dealers for dropdown (use master dealerData if available, fallback to unique dealers in table)
-     ---------------------------*/
+ 
   const dealersList = useMemo(() => {
     if (Array.isArray(dealerData) && dealerData.length > 0) {
       return dealerData
@@ -250,9 +239,6 @@ const Dashboard = () => {
       .sort((a, b) => a.name.localeCompare(b.name));
   }, [dealerData, tableData]);
 
-  /* ---------------------------
-     Applied filter label
-     ---------------------------*/
   const appliedRangeLabel = () => {
     if (!leadId && !filterStartDate && !filterEndDate && !dealerFilterCode) return null;
     const parts = [];
@@ -264,9 +250,6 @@ const Dashboard = () => {
     return parts.join(" • ");
   };
 
-  /* ---------------------------
-     Clear filters handler
-     ---------------------------*/
   const clearFilters = () => {
     setLeadId("");
     setFilterStartDate("");
@@ -279,9 +262,7 @@ const Dashboard = () => {
     setFetchTrigger((t) => t + 1);
   };
 
-  /* ---------------------------
-     Pagination helpers
-     ---------------------------*/
+ 
   const goToPage = (n) => {
     const page = Math.min(Math.max(1, n), backendTotalPages || 1);
     setCurrentPage(page);
@@ -334,19 +315,20 @@ const Dashboard = () => {
     ));
   };
 
-  /* ---------------------------
-     Search handler (user triggers)
-     ---------------------------*/
+  
   const onSearch = (e) => {
     e && e.preventDefault();
+    
+    if ((filterStartDate && !filterEndDate) || (!filterStartDate && filterEndDate)) {
+    alert("Please select BOTH Start Date and End Date.");
+    return;
+  }
+
     setCurrentPage(1);
     setWindowStart(1);
     setFetchTrigger((t) => t + 1); // triggers fetchPage effect
   };
 
-  /* ---------------------------
-     CSV export
-     ---------------------------*/
   const exportCSV = async () => {
   try {
     // CSV headers
@@ -441,8 +423,6 @@ const Dashboard = () => {
 };
 
 
-
-
   const handleLogout = () => {
     localStorage.removeItem("isAuth");
     localStorage.removeItem("access_token");
@@ -450,6 +430,10 @@ const Dashboard = () => {
   };
 
   const goToSummary = () => navigate("/summary");
+
+  const [dealerOpen, setDealerOpen] = useState(false);
+  const [dealerSearch, setDealerSearch] = useState("");
+
 
   return (
     <div
@@ -497,23 +481,61 @@ const Dashboard = () => {
 
             <div className="form-group">
               <label className="form-label">Dealer</label>
-              <select
-                className="select-input"
-                value={dealerFilterCode}
-                onChange={(e) => {
-                  const code = e.target.value;
-                  setDealerFilterCode(code);
-                  const found = dealersList.find((x) => x.code === code);
-                  setDealerFilterName(found?.name || "");
-                }}
+
+              <div 
+                className="dropdown-container" 
+                onClick={() => setDealerOpen(!dealerOpen)}
               >
-                <option value="">All Dealers</option>
-                {dealersList.map((d) => (
-                  <option key={d.code || d.name} value={d.code || d.name}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
+                <div className="dropdown-selected">
+                  {dealerFilterName || "All Dealers"}
+                </div>
+
+                {dealerOpen && (
+                  <div className="dropdown-panel">
+                    <input
+                      type="text"
+                      className="dropdown-search"
+                      placeholder="Search dealer..."
+                      value={dealerSearch}
+                      onChange={(e) => setDealerSearch(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+
+                    <div className="dropdown-list">
+                      <div
+                        className="dropdown-item"
+                        onClick={() => {
+                          setDealerFilterCode("");
+                          setDealerFilterName("");
+                          setDealerOpen(false);
+                          setDealerSearch("");
+                        }}
+                      >
+                        All Dealers
+                      </div>
+
+                      {dealersList
+                        .filter((d) =>
+                          d.name.toLowerCase().includes(dealerSearch.toLowerCase())
+                        )
+                        .map((d) => (
+                          <div
+                            key={d.code}
+                            className="dropdown-item"
+                            onClick={() => {
+                              setDealerFilterCode(d.code);
+                              setDealerFilterName(d.name);
+                              setDealerOpen(false);
+                              setDealerSearch("");
+                            }}
+                          >
+                            {d.name}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="form-group">
@@ -522,7 +544,15 @@ const Dashboard = () => {
                 type="date"
                 className="date-input"
                 value={filterStartDate}
-                onChange={(e) => setFilterStartDate(e.target.value)}
+                onChange={(e) => {
+                  const newStart = e.target.value;
+                  setFilterStartDate(newStart);
+
+                  if (filterEndDate && newStart > filterEndDate) {
+                    alert("Start date cannot be greater than End date");
+                    setFilterStartDate(filterEndDate); // auto-correct
+                  }
+                }}
               />
             </div>
 
@@ -532,9 +562,18 @@ const Dashboard = () => {
                 type="date"
                 className="date-input"
                 value={filterEndDate}
-                onChange={(e) => setFilterEndDate(e.target.value)}
+                onChange={(e) => {
+                  const newEnd = e.target.value;
+                  setFilterEndDate(newEnd);
+
+                  if (filterStartDate && newEnd < filterStartDate) {
+                    alert("End date cannot be less than Start date");
+                    setFilterEndDate(filterStartDate); // auto-correct
+                  }
+                }}
               />
             </div>
+
           </div>
 
           {/* applied filters badge + action buttons (kept on one row) */}

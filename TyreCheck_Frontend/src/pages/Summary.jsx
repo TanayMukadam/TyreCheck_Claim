@@ -199,6 +199,11 @@ const Summary = () => {
 
   const onSearch = (e) => {
     e && e.preventDefault();
+
+    if ((filterStartDate && !filterEndDate) || (!filterStartDate && filterEndDate)) {
+    alert("Please select BOTH Start Date and End Date.");
+    return;
+  }
     const body = {
       servicetype: mode,
       dealer_code: dealerFilter || null,
@@ -227,6 +232,11 @@ const Summary = () => {
   const getDealerName = (d, idx) => d.Dealer_name || d.dealerName || d.name || `Dealer ${idx + 1}`;
   const getDealerCode = (d, idx) => d.Dealer_code || d.dealerCode || d.code || idx;
   const getDefects = (d) => d.defects || d.defect_counts || d.defectList || d.details || d.defects_list || [];
+
+  const [dealerOpen, setDealerOpen] = useState(false);
+  const [dealerSearch, setDealerSearch] = useState("");
+  const [dealerFilterName, setDealerFilterName] = useState("");
+
 
   return (
     <div
@@ -260,12 +270,38 @@ const Summary = () => {
           <div className="form-row summary-form-row">
             <div className="form-group">
               <label className="form-label">Start Date</label>
-              <input className="date-input" type="date" value={filterStartDate} onChange={(e) => setFilterStartDate(e.target.value)} />
+              <input
+                type="date"
+                className="date-input"
+                value={filterStartDate}
+                onChange={(e) => {
+                  const newStart = e.target.value;
+                  setFilterStartDate(newStart);
+
+                  if (filterEndDate && newStart > filterEndDate) {
+                    alert("Start date cannot be greater than End date");
+                    setFilterStartDate(filterEndDate); // auto-correct
+                  }
+                }}
+              />
             </div>
 
             <div className="form-group">
               <label className="form-label">End Date</label>
-              <input className="date-input" type="date" value={filterEndDate} onChange={(e) => setFilterEndDate(e.target.value)} />
+              <input
+                type="date"
+                className="date-input"
+                value={filterEndDate}
+                onChange={(e) => {
+                  const newEnd = e.target.value;
+                  setFilterEndDate(newEnd);
+
+                  if (filterStartDate && newEnd < filterStartDate) {
+                    alert("End date cannot be less than Start date");
+                    setFilterEndDate(filterStartDate); // auto-correct
+                  }
+                }}
+              />
             </div>
 
             <div className="form-group">
@@ -279,6 +315,71 @@ const Summary = () => {
                 ))}
               </select>
             </div>
+
+            {/* <div className="form-group">
+              <label className="form-label">Dealer</label>
+
+              <div
+                className="dropdown-container"
+                onClick={() => setDealerOpen(!dealerOpen)}
+              >
+                <div className="dropdown-selected">
+                  {dealerFilterName || "All Dealers"}
+                </div>
+
+                {dealerOpen && (
+                  <div className="dropdown-panel">
+                    <input
+                      type="text"
+                      className="dropdown-search"
+                      placeholder="Search dealer..."
+                      value={dealerSearch}
+                      onChange={(e) => setDealerSearch(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+
+                    <div className="dropdown-list">
+                      <div
+                        className="dropdown-item"
+                        onClick={() => {
+                          setDealerFilter("");
+                          setDealerFilterName("");
+                          setDealerSearch("");
+                          setDealerOpen(false);
+                        }}
+                      >
+                        All Dealers
+                      </div>
+
+                      {dealerData
+                        .filter((d) =>
+                          (d.Dealer_name || d.dealerName || d.name)
+                            .toLowerCase()
+                            .includes(dealerSearch.toLowerCase())
+                        )
+                        .map((d) => (
+                          <div
+                            key={d.ID || d.Dealer_code}
+                            className="dropdown-item"
+                            onClick={() => {
+                              const name = d.Dealer_name || d.dealerName || d.name;
+                              const code = d.Dealer_code || d.dealerCode || d.code || "";
+
+                              setDealerFilter(code);        // stores selected value
+                              setDealerFilterName(name);    // displays selected label
+                              setDealerSearch("");
+                              setDealerOpen(false);
+                            }}
+                          >
+                            {d.Dealer_name || d.dealerName || d.name}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div> */}
+
 
             <div className="search-button-wrap">
               <button className="search-action-btn" type="submit">

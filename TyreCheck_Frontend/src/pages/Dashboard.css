@@ -1,7 +1,7 @@
 /* Dashboard.css — scoped to .dashboard-page */
 .dashboard-page,
 .dashboard-page * {
-  box-sizing:content-box;
+  box-sizing: border-box;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial
 }
 
@@ -446,3 +446,55 @@
   font-weight: 500;
 }
 
+.dropdown-container {
+  position: relative;
+  width: 100%;
+  padding: 12px 14px;        
+  border: 1px solid #d8d8d8;
+  border-radius: 8px;        
+  background: #fff;
+  cursor: pointer;
+  box-sizing: border-box;
+  font-size: 14px;         
+  height: 42px;         
+  align-items: center;
+}
+
+.dropdown-selected {
+  font-size: 14px;
+}
+
+.dropdown-panel {
+  position: absolute;
+  top: 105%;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  z-index: 999;
+  max-height: 250px;
+  overflow: hidden;
+}
+
+.dropdown-search {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  outline: none;
+}
+
+.dropdown-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background: #e8f0ff;
+}
