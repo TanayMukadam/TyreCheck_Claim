@@ -33,6 +33,9 @@ async def access_with_sp_paged_iso(
     USP_GetAllDetails_Paged which uses DATE(FromDate) safely.
     """
     try:
+        
+        
+        print(request.ClaimWarrantyId, request.DealerId, request.Servicetype)
         page = max(1, int(request.page or 1))
 
         # Build WHERE clauses & params for COUNT query (parameterized)

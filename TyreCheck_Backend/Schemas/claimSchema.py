@@ -68,3 +68,10 @@ class UpdateClaim(BaseModel):
     type : Optional[str]
     corrected_value : Optional[str]
     
+    
+    
+class ai_summary(BaseModel):
+    dealer_id: Optional[str]
+    service_type : str = "claim"
+    fromDate : Optional[str] = None
+    toDate : Optional[str] = None

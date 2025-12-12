@@ -6,35 +6,6 @@ import tyrecheck_url from "../constants/tyrecheck.constants.js"; // keep as your
 import { IoIosSearch } from "react-icons/io";
 import { FiPlus, FiMinus } from "react-icons/fi";
 
-/**
- * Keep design unchanged — only update dealer table behavior:
- * - more dummy data (20 dealers)
- * - scroll within card limited to ~10 rows
- */
-
-const DUMMY_DEALER_DATA = [
-  { Dealer_code: "D001", Dealer_name: "GUPTA TYRES HOUSE", defects: [{ defectName: "Shoulder Cut", defectCount: 58 }, { defectName: "Sidewall Cut", defectCount: 34 }] },
-  { Dealer_code: "D002", Dealer_name: "SHIVDHARA TYRE WORLD", defects: [{ defectName: "Runflat", defectCount: 22 }, { defectName: "Tread Cut", defectCount: 15 }] },
-  { Dealer_code: "D003", Dealer_name: "R.K WHEELS", defects: [{ defectName: "CBU", defectCount: 6 }] },
-  { Dealer_code: "D004", Dealer_name: "MATHURA TYRE SHOP", defects: [{ defectName: "Shoulder Cut", defectCount: 11 }, { defectName: "Sidewall Cut", defectCount: 7 }] },
-  { Dealer_code: "D005", Dealer_name: "SINGH TYRES", defects: [{ defectName: "Runflat", defectCount: 3 }] },
-  { Dealer_code: "D006", Dealer_name: "KUMAR TYRES", defects: [{ defectName: "Tread Cut", defectCount: 9 }, { defectName: "CBU", defectCount: 2 }] },
-  { Dealer_code: "D007", Dealer_name: "RAJ TYRE STORE", defects: [{ defectName: "Shoulder Cut", defectCount: 4 }] },
-  { Dealer_code: "D008", Dealer_name: "BALAJI TYRES", defects: [{ defectName: "Sidewall Cut", defectCount: 5 }, { defectName: "Runflat", defectCount: 1 }] },
-  { Dealer_code: "D009", Dealer_name: "PRIYA TYRE HUB", defects: [{ defectName: "Tread Cut", defectCount: 6 }] },
-  { Dealer_code: "D010", Dealer_name: "VIJAY WHEELS", defects: [{ defectName: "Shoulder Cut", defectCount: 7 }, { defectName: "Sidewall Cut", defectCount: 3 }] },
-
-  { Dealer_code: "D011", Dealer_name: "MAHA TYRE CENTRE", defects: [{ defectName: "Runflat", defectCount: 8 }] },
-  { Dealer_code: "D012", Dealer_name: "ALOK TYRES", defects: [{ defectName: "Tread Cut", defectCount: 2 }] },
-  { Dealer_code: "D013", Dealer_name: "NAVEEN TYRE HOUSE", defects: [{ defectName: "CBU", defectCount: 1 }] },
-  { Dealer_code: "D014", Dealer_name: "SUNIL TYRES", defects: [{ defectName: "Sidewall Cut", defectCount: 10 }] },
-  { Dealer_code: "D015", Dealer_name: "ROYAL WHEELS", defects: [{ defectName: "Shoulder Cut", defectCount: 13 }] },
-  { Dealer_code: "D016", Dealer_name: "CITY TYRE POINT", defects: [{ defectName: "Runflat", defectCount: 2 }, { defectName: "Tread Cut", defectCount: 1 }] },
-  { Dealer_code: "D017", Dealer_name: "SURESH TYRE CO", defects: [{ defectName: "Sidewall Cut", defectCount: 4 }] },
-  { Dealer_code: "D018", Dealer_name: "NEXA TYRES", defects: [{ defectName: "Runflat", defectCount: 12 }] },
-  { Dealer_code: "D019", Dealer_name: "EVEREST TYRE SHOP", defects: [{ defectName: "Tread Cut", defectCount: 5 }] },
-  { Dealer_code: "D020", Dealer_name: "GOLDEN TYRE MART", defects: [{ defectName: "CBU", defectCount: 3 }, { defectName: "Shoulder Cut", defectCount: 2 }] }
-];
 
 const Summary = () => {
   const navigate = useNavigate();
@@ -46,6 +17,8 @@ const Summary = () => {
 
   const [overallreportData, setOverallReportData] = useState(null);
   const [summarydata, setSummaryData] = useState(null);
+  const [aiSummary, setAiSummary] = useState([]);
+
 
   // dealer-wise report data
   const [dealerReportData, setDealerReportData] = useState([]);
@@ -58,21 +31,47 @@ const Summary = () => {
   const [dealerData, setDealerData] = useState([]);
 
   // fetch dealer list (dropdown)
-  const fetchDealerData = async () => {
-    try {
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(`${tyrecheck_url}/auth/dealers`, {
-        method: "GET",
-        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-      });
-      if (!response.ok) return;
-      const result = await response.json();
-      setDealerData(result || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // const fetchDealerData = async () => {
+  //   try {
+  //     const token = localStorage.getItem("access_token");
+  //     const response = await fetch(`${tyrecheck_url}/auth/dealers`, {
+  //       method: "GET",
+  //       headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  //     });
+  //     if (!response.ok) return;
+  //     const result = await response.json();
+  //     setDealerData(result || []);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
 
+
+  const fetchDealerData = async () => {
+  try {
+    const token = localStorage.getItem("access_token");
+
+    const response = await fetch(`${tyrecheck_url}/auth/dealers`, {
+      method: "GET",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!response.ok) return;
+
+    const result = await response.json();
+
+    // Sort ascending by Dealer_name (case-insensitive)
+    const sorted = [...(result || [])].sort((a, b) =>
+      a.Dealer_name.localeCompare(b.Dealer_name, "en", { sensitivity: "base" })
+    );
+
+    setDealerData(sorted);
+  } catch (err) {
+    console.error(err);
+  }
+};
   // fetch summary
   const fetchSummaryData = async (bodyData = {}) => {
     try {
@@ -103,48 +102,76 @@ const Summary = () => {
     }
   };
 
-  // fetch dealer report (expandable)
-  const fetchDealerReport = async (bodyData = {}) => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("access_token");
-      const response = await fetch(`${tyrecheck_url}/auth/summary/dealer_report`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(bodyData || {}),
-      });
+  // fetch AI Summary
 
-      if (!response.ok) {
-        setLoading(false);
-        return;
-      }
+  const fetchAiSummary = async () => {
+  try {
+    const token = localStorage.getItem("access_token");
 
-      const result = await response.json();
-      setDealerReportData(Array.isArray(result.dealer_report) ? result.dealer_report : (Array.isArray(result) ? result : []));
-      setLoading(false);
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-    }
-  };
+    const response = await fetch(`${tyrecheck_url}/auth/summary/ai_summary`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        dealer_id: null,
+        service_type: "claim",
+        fromDate: null,
+        toDate: null
+      })
+    });
+
+    const rows = await response.json();
+
+    // --- GROUP THE RESULT HERE ---
+    const grouped = Object.values(
+      rows.reduce((acc, row) => {
+        const code = row.Dealer_code;
+
+        if (!acc[code]) {
+          acc[code] = {
+            dealerCode: row.Dealer_code,
+            dealerName: row.Dealer_name,
+            defects: []
+          };
+        }
+
+        acc[code].defects.push({
+          defectName: row.Final_Defect,
+          defectCount: row.dealercount
+        });
+
+        return acc;
+      }, {})
+    );
+
+    setAiSummary(grouped);
+    setDealerReportData(grouped); // Used by your table
+    console.log("Grouped AI Summary:", grouped);
+
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
 
   // initial load
   useEffect(() => {
-    (async () => {
-      await fetchDealerData();
-      await fetchSummaryData({});
-      await fetchDealerReport({});
+  (async () => {
+    await fetchDealerData();
+    await fetchSummaryData({});
 
-      // fallback to larger dummy data so UI shows many rows
-      setTimeout(() => {
-        setDealerReportData((prev) => (Array.isArray(prev) && prev.length > 0 ? prev : DUMMY_DEALER_DATA));
-      }, 250);
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const ai = await fetchAiSummary();  // return value
+
+    setDealerReportData((prev) =>
+      Array.isArray(prev) && prev.length > 0
+        ? prev
+        : ai
+    );
+  })();
+}, []);
 
   const onSearch = (e) => {
     e && e.preventDefault();
@@ -155,7 +182,7 @@ const Summary = () => {
       to_date: filterEndDate || null,
     };
     fetchSummaryData(body);
-    fetchDealerReport(body);
+    // fetchDealerReport(body);
   };
 
   const toggleDealer = (dealerKey) => {
