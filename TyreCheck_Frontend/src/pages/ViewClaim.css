@@ -295,12 +295,12 @@
 }
 .view-page .claims-table td:nth-child(2),
 .view-page .claims-table th:nth-child(2) {
-  width: 300px !important;
+  width: 10px !important;
   white-space: normal !important;
 }
 .view-page .claims-table td:nth-child(3),
 .view-page .claims-table th:nth-child(3) {
-  width: 250px !important;
+  width: 50px !important;
 }
 .view-page .claims-table td:nth-child(4),
 .view-page .claims-table th:nth-child(4) {
@@ -308,7 +308,7 @@
 }
 .view-page .claims-table td:nth-child(5),
 .view-page .claims-table th:nth-child(5) {
-  width: 220px !important;
+  width: 200px !important;
 }
 .view-page .claims-table td:nth-child(6),
 .view-page .claims-table th:nth-child(6) {
