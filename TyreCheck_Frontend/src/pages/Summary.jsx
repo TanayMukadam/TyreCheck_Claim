@@ -433,7 +433,7 @@ const Summary = () => {
                               <tr className="dealer-row">
                                 <td className="expand-cell">
                                   <button className="expand-btn" onClick={() => toggleDealer(dealerCode)}>
-                                    {isOpen ? <FiMinus /> : <FiPlus />}
+                                    {isOpen ? <FiMinus style={{color:"red"}}/> : <FiPlus />}
                                   </button>
                                 </td>
                                 <td className="dealer-name-cell" style={{ textAlign: "left" }}>{dealerName}</td>
