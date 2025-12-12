@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  backend:
+    build: ./backend
+    container_name: tyrecheck-backend
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./backend:/app
+      - ./shared_uploads:/shared_uploads
+    env_file: ./backend/.env
+    restart: always
+
+  frontend:
+    build: ./frontend
+    container_name: tyrecheck-frontend
+    ports:
+      - "8087:80"
+      - "8443:443"
+    volumes:
+      - ./shared_uploads:/app/src/uploads
+    depends_on:
+      - backend
+    restart: always
