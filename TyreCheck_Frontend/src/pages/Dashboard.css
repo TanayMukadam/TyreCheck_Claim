@@ -419,3 +419,30 @@
     gap: 8px;
   }
 }
+
+.loading-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40vh; /* centers nicely */
+  width: 100%;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading-gif {
+  width: 80px; 
+  height: auto;
+}
+
+.loading-text {
+  margin-top: 12px;
+  font-size: 18px;
+  color: #444;
+  font-weight: 500;
+}
+

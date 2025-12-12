@@ -5,6 +5,7 @@ import "./Summary.css";
 import tyrecheck_url from "../constants/tyrecheck.constants.js"; // keep as your project expects
 import { IoIosSearch } from "react-icons/io";
 import { FiPlus, FiMinus } from "react-icons/fi";
+import LoaderGif from "../assets/black.gif";
 
 
 const Summary = () => {
@@ -75,7 +76,7 @@ const Summary = () => {
   // fetch summary
   const fetchSummaryData = async (bodyData = {}) => {
     try {
-      setLoading(true);
+      // setLoading(true);
       const token = localStorage.getItem("access_token");
       const response = await fetch(`${tyrecheck_url}/auth/summary/summary_report`, {
         method: "POST",
@@ -86,7 +87,7 @@ const Summary = () => {
         body: JSON.stringify(bodyData || {}),
       });
       if (!response.ok) {
-        setLoading(false);
+        // setLoading(false);
         return;
       }
       const result = await response.json();
@@ -95,10 +96,10 @@ const Summary = () => {
       if (result.dealer_summary && Array.isArray(result.dealer_summary)) {
         setDealerReportData(result.dealer_summary);
       }
-      setLoading(false);
+      // setLoading(false);
     } catch (err) {
       console.error(err);
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -159,22 +160,32 @@ const Summary = () => {
 
   // initial load
   useEffect(() => {
-  (async () => {
-    await fetchDealerData();
-    await fetchSummaryData({});
+    const loadData = async () => {
+      try {
+        setLoading(true);
 
-    const ai = await fetchAiSummary();  // return value
+        await fetchDealerData();
+        await fetchSummaryData({});
+        const ai = await fetchAiSummary();
 
-    setDealerReportData((prev) =>
-      Array.isArray(prev) && prev.length > 0
-        ? prev
-        : ai
-    );
-  })();
-}, []);
+        // Set only if dealer data wasn't already populated
+        setDealerReportData((prev) =>
+          Array.isArray(prev) && prev.length > 0 ? prev : ai
+        );
+
+      } catch (error) {
+        console.error("Summary initial load error:", error);
+      } finally {
+        setLoading(false); // <-- runs ONLY after all awaits
+      }
+    };
+
+    loadData();
+  }, []);
 
   const onSearch = (e) => {
     e && e.preventDefault();
+    setLoading(true)
     const body = {
       servicetype: mode,
       dealer_code: dealerFilter || null,
@@ -183,6 +194,7 @@ const Summary = () => {
     };
     fetchSummaryData(body);
     // fetchDealerReport(body);
+    setLoading(false);
   };
 
   const toggleDealer = (dealerKey) => {
@@ -282,184 +294,190 @@ const Summary = () => {
           <button className={`seg-btn ${aiTab === "aiSummary" ? "active" : ""}`} onClick={() => setAiTab("aiSummary")}>AI Summary</button>
         </div>
       </div>
-
-      {/* CONTENT SECTION */}
-      <section className="table-section">
-        <div className="table-card">
-          {/* CLAIM - AI RESULT */}
-          {mode === "claim" && aiTab === "aiResult" && (
-            <div className="summary-content no-donut">
-              <div className="overall-card overall-card-no-donut">
-                <h3>Overall Claim AI Output %</h3>
-                <div className="overall-body overall-body-no-donut">
-                  <div className="overall-stats overall-stats-large">
-                    <table className="summary-stat-table large bordered">
-                      <thead style={{ backgroundColor: "#f0f0f0" }}>
-                        <tr>
-                          <th>Overall %</th>
-                          <th>Count</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {overallreportData && overallreportData.length > 0 ? (
-                          overallreportData.map((item, idx) => (
-                            <tr key={idx}>
-                              <td>{item.Overall}</td>
-                              <td>{item.WarrantyCount}</td>
+          <section className="table-section">
+            {loading ? (
+              <div className="loading-wrapper">
+                <div className="loading-content">
+                  <img src={LoaderGif} alt="loading" className="loading-gif" />
+                  <div className="loading-text">Data Loading...</div>
+                </div>
+              </div> ): (
+                <div className="table-card">
+              {/* CLAIM - AI RESULT */}
+              {mode === "claim" && aiTab === "aiResult" && (
+                <div className="summary-content no-donut">
+                  <div className="overall-card overall-card-no-donut">
+                    <h3>Overall Claim AI Output %</h3>
+                    <div className="overall-body overall-body-no-donut">
+                      <div className="overall-stats overall-stats-large">
+                        <table className="summary-stat-table large bordered">
+                          <thead style={{ backgroundColor: "#f0f0f0" }}>
+                            <tr>
+                              <th>Overall %</th>
+                              <th>Count</th>
                             </tr>
-                          ))
-                        ) : (
+                          </thead>
+                          <tbody>
+                            {overallreportData && overallreportData.length > 0 ? (
+                              overallreportData.map((item, idx) => (
+                                <tr key={idx}>
+                                  <td>{item.Overall}</td>
+                                  <td>{item.WarrantyCount}</td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan="2" style={{ textAlign: "center" }}>
+                                  No data available
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="partition" />
+
+                  <div className="typewise-card">
+                    <h3>Type wise AI output %</h3>
+                    <div className="widget">
+                      <table className="summary-stat-table full-width bordered">
+                        <thead style={{ backgroundColor: "#f0f0f0" }}>
                           <tr>
-                            <td colSpan="2" style={{ textAlign: "center" }}>
-                              No data available
-                            </td>
+                            <th>Type</th>
+                            <th>Image Count</th>
+                            <th>Avg. Accuracy</th>
+                            <th>100%</th>
+                            <th>90%</th>
+                            <th>50%</th>
+                            <th>Not processed</th>
                           </tr>
-                        )}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {summarydata && summarydata.length > 0 ? (
+                            summarydata.map((item, idx) => (
+                              <tr key={idx}>
+                                <td>{item.Type}</td>
+                                <td>{item.TypeCount}</td>
+                                <td>{item.average}%</td>
+                                <td>{item.H100}</td>
+                                <td>{item.H90}</td>
+                                <td>{item.H50}</td>
+                                <td>{item.AINotProcess}</td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="7" style={{ textAlign: "center" }}>
+                                No data available
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
-              <div className="partition" />
+              {/* AI SUMMARY (expandable dealer table) */}
+              {mode === "claim" && aiTab === "aiSummary" && (
+                <div className="ai-summary-section">
+                  <h3 style={{ textAlign: "center", marginBottom: 12 }}>
+                    Dealer-wise Defect Summary
+                  </h3>
 
-              <div className="typewise-card">
-                <h3>Type wise AI output %</h3>
-                <div className="widget">
-                  <table className="summary-stat-table full-width bordered">
-                    <thead style={{ backgroundColor: "#f0f0f0" }}>
-                      <tr>
-                        <th>Type</th>
-                        <th>Image Count</th>
-                        <th>Avg. Accuracy</th>
-                        <th>100%</th>
-                        <th>90%</th>
-                        <th>50%</th>
-                        <th>Not processed</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {summarydata && summarydata.length > 0 ? (
-                        summarydata.map((item, idx) => (
-                          <tr key={idx}>
-                            <td>{item.Type}</td>
-                            <td>{item.TypeCount}</td>
-                            <td>{item.average}%</td>
-                            <td>{item.H100}</td>
-                            <td>{item.H90}</td>
-                            <td>{item.H50}</td>
-                            <td>{item.AINotProcess}</td>
+                  <div className="widget">
+                    {/* WRAP the table in a scrollable container limited to ~10 rows */}
+                    <div className="dealer-table-wrap">
+                      <table className="dealer-table full-width bordered">
+                        <thead style={{ backgroundColor: "#f0f0f0" }}>
+                          <tr>
+                            <th style={{ width: 60 }}></th>
+                            <th style={{ textAlign: "left" }}>Dealer Name</th>
+                            <th style={{ width: 140, textAlign: "center" }}>
+                              Total Defects
+                            </th>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan="7" style={{ textAlign: "center" }}>
-                            No data available
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
+                        </thead>
 
-          {/* AI SUMMARY (expandable dealer table) */}
-          {mode === "claim" && aiTab === "aiSummary" && (
-            <div className="ai-summary-section">
-              <h3 style={{ textAlign: "center", marginBottom: 12 }}>
-                Dealer-wise Defect Summary
-              </h3>
+                        <tbody>
+                          {dealerReportData && dealerReportData.length > 0 ? (
+                            dealerReportData.map((dealer, idx) => {
+                              const dealerName = getDealerName(dealer, idx);
+                              const dealerCode = getDealerCode(dealer, idx);
+                              const defects = getDefects(dealer);
+                              const totalDefects = Array.isArray(defects)
+                                ? defects.reduce((s, d) => s + (d.defectCount ?? d.count ?? d.DefectCount ?? 0), 0)
+                                : 0;
+                              const isOpen = expandedDealers.has(dealerCode);
 
-              <div className="widget">
-                {/* WRAP the table in a scrollable container limited to ~10 rows */}
-                <div className="dealer-table-wrap">
-                  <table className="dealer-table full-width bordered">
-                    <thead style={{ backgroundColor: "#f0f0f0" }}>
-                      <tr>
-                        <th style={{ width: 60 }}></th>
-                        <th style={{ textAlign: "left" }}>Dealer Name</th>
-                        <th style={{ width: 140, textAlign: "center" }}>
-                          Total Defects
-                        </th>
-                      </tr>
-                    </thead>
+                              return (
+                                <React.Fragment key={`${dealerCode}-${idx}`}>
+                                  <tr className="dealer-row">
+                                    <td className="expand-cell">
+                                      <button className="expand-btn" onClick={() => toggleDealer(dealerCode)}>
+                                        {isOpen ? <FiMinus /> : <FiPlus />}
+                                      </button>
+                                    </td>
+                                    <td className="dealer-name-cell" style={{ textAlign: "left" }}>{dealerName}</td>
+                                    <td style={{ textAlign: "center" }}>{totalDefects}</td>
+                                  </tr>
 
-                    <tbody>
-                      {dealerReportData && dealerReportData.length > 0 ? (
-                        dealerReportData.map((dealer, idx) => {
-                          const dealerName = getDealerName(dealer, idx);
-                          const dealerCode = getDealerCode(dealer, idx);
-                          const defects = getDefects(dealer);
-                          const totalDefects = Array.isArray(defects)
-                            ? defects.reduce((s, d) => s + (d.defectCount ?? d.count ?? d.DefectCount ?? 0), 0)
-                            : 0;
-                          const isOpen = expandedDealers.has(dealerCode);
-
-                          return (
-                            <React.Fragment key={`${dealerCode}-${idx}`}>
-                              <tr className="dealer-row">
-                                <td className="expand-cell">
-                                  <button className="expand-btn" onClick={() => toggleDealer(dealerCode)}>
-                                    {isOpen ? <FiMinus /> : <FiPlus />}
-                                  </button>
-                                </td>
-                                <td className="dealer-name-cell" style={{ textAlign: "left" }}>{dealerName}</td>
-                                <td style={{ textAlign: "center" }}>{totalDefects}</td>
-                              </tr>
-
-                              {isOpen && (
-                                <tr className="dealer-expanded-row">
-                                  <td colSpan="3" style={{ padding: 0 }}>
-                                    <div className="expanded-inner">
-                                      <table className="inner-defect-table full-width">
-                                        <thead>
-                                          <tr>
-                                            <th style={{ textAlign: "left" }}>Defect Name</th>
-                                            <th style={{ width: 120, textAlign: "center" }}>Defect Count</th>
-                                          </tr>
-                                        </thead>
-                                        <tbody>
-                                          {Array.isArray(defects) && defects.length > 0 ? (
-                                            defects.map((d, di) => (
-                                              <tr key={di}>
-                                                <td style={{ textAlign: "left" }}>{d.defectName ?? d.DefectName ?? d.name ?? `Defect ${di + 1}`}</td>
-                                                <td style={{ textAlign: "center" }}>{d.defectCount ?? d.count ?? d.DefectCount ?? 0}</td>
+                                  {isOpen && (
+                                    <tr className="dealer-expanded-row">
+                                      <td colSpan="3" style={{ padding: 0 }}>
+                                        <div className="expanded-inner">
+                                          <table className="inner-defect-table full-width">
+                                            <thead>
+                                              <tr>
+                                                <th style={{ textAlign: "left" }}>Defect Name</th>
+                                                <th style={{ width: 120, textAlign: "center" }}>Defect Count</th>
                                               </tr>
-                                            ))
-                                          ) : (
-                                            <tr>
-                                              <td colSpan="2" style={{ textAlign: "center" }}>No defect data for this dealer.</td>
-                                            </tr>
-                                          )}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </td>
-                                </tr>
-                              )}
-                            </React.Fragment>
-                          );
-                        })
-                      ) : (
-                        <tr>
-                          <td colSpan="3" style={{ textAlign: "center", padding: 18 }}>
-                            No dealer summary available.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                                            </thead>
+                                            <tbody>
+                                              {Array.isArray(defects) && defects.length > 0 ? (
+                                                defects.map((d, di) => (
+                                                  <tr key={di}>
+                                                    <td style={{ textAlign: "left" }}>{d.defectName ?? d.DefectName ?? d.name ?? `Defect ${di + 1}`}</td>
+                                                    <td style={{ textAlign: "center" }}>{d.defectCount ?? d.count ?? d.DefectCount ?? 0}</td>
+                                                  </tr>
+                                                ))
+                                              ) : (
+                                                <tr>
+                                                  <td colSpan="2" style={{ textAlign: "center" }}>No defect data for this dealer.</td>
+                                                </tr>
+                                              )}
+                                            </tbody>
+                                          </table>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )}
+                                </React.Fragment>
+                              );
+                            })
+                          ) : (
+                            <tr>
+                              <td colSpan="3" style={{ textAlign: "center", padding: 18 }}>
+                                No dealer summary available.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* end dealer-table-wrap */}
+                  </div>
                 </div>
-                {/* end dealer-table-wrap */}
-              </div>
-            </div>
-          )}
+              )}
 
-          {loading && <div style={{ marginTop: 12 }}>Loading...</div>}
-        </div>
-      </section>
+            </div>
+              )}
+            
+          </section>
     </div>
   );
 };

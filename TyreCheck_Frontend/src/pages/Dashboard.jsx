@@ -6,12 +6,12 @@ import Logo from "../assets/Logo.png";
 import { IoIosSearch } from "react-icons/io";
 import "./Dashboard.css";
 import tyrecheck_url from "../constants/tyrecheck.constants";
+import LoaderGif from "../assets/black.gif";
+
 
 /* ---------------------------
    Helpers
    ---------------------------*/
-
-
 
    
 // Convert backend CreatedDate "dd/MM/yyyy HH:mm" -> ISO date "yyyy-mm-dd"
@@ -38,13 +38,10 @@ const formatProcessedTime = (str) => {
   if (!str) return "";
   const regex = /(\d+)\s*minutes?\s*(\d+)\s*seconds?/i;
   const m = str.match(regex);
-  if (m) return `${m[1]} minutes ${m[2]} seconds`;
+  if (m) return `${m[1]} mins ${m[2]} secs`;
   return str;
 };
 
-/* ---------------------------
-   Dashboard component
-   ---------------------------*/
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -79,6 +76,30 @@ const Dashboard = () => {
 
   const token = localStorage.getItem("access_token");
 
+  function parseBackendDate(dateStr) {
+      if (!dateStr) return null;
+
+      const [datePart, timePart] = dateStr.split(" ");
+      if (!datePart) return null;
+
+      const [day, month, year] = datePart.split("/");
+      const [hour = 0, minute = 0] = (timePart || "").split(":");
+
+      return new Date(year, month - 1, day, hour, minute);
+    }
+
+  function formatDisplayDate(date) {
+      if (!date) return "";
+
+      const dd = String(date.getDate()).padStart(2, "0");
+      const mm = String(date.getMonth() + 1).padStart(2, "0");
+      const yyyy = date.getFullYear();
+
+      const hh = String(date.getHours()).padStart(2, "0");
+      const min = String(date.getMinutes()).padStart(2, "0");
+
+      return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+    }
   /* ---------------------------
      Fetch dealers (once)
      ---------------------------*/
@@ -168,7 +189,8 @@ const Dashboard = () => {
           dealer: r.Dealer_name ?? r.DealerName ?? "",
           claimType: r.Service_type ?? r.ServiceType ?? "",
           createdDateRaw: r.CreatedDate ?? null,
-          claimWarrantyDate: createdDateToISO(r.CreatedDate) || null,
+          // claimWarrantyDate: createdDateToISO(r.CreatedDate) || null,
+          claimWarrantyDate: formatDisplayDate(parseBackendDate(r.CreatedDate)),
           processedTime: formatProcessedTime(r.InspectionTime ?? r.TotalAVG ?? ""),
         }));
 
@@ -373,9 +395,6 @@ const Dashboard = () => {
 
   const goToSummary = () => navigate("/summary");
 
-  /* ---------------------------
-     JSX render
-     ---------------------------*/
   return (
     <div
       className="dashboard-page"
@@ -473,7 +492,7 @@ const Dashboard = () => {
                   onClick={clearFilters}
                   aria-label="Clear filters"
                 >
-                  ✕
+                  <span>✕</span>
                 </button>
               </div>
             )}
@@ -501,7 +520,13 @@ const Dashboard = () => {
       <section className="table-section">
         <div className="table-card">
           {loading ? (
-            <div className="loading">Loading...</div>
+            // <div style={{display:'flex',alignItems: 'center'}}>Loading...</div>
+            <div className="loading-wrapper">
+              <div className="loading-content">
+                <img src={LoaderGif} alt="loading" className="loading-gif" />
+                <div className="loading-text">Data Loading...</div>
+              </div>
+            </div>
           ) : error ? (
             <div className="error">{error}</div>
           ) : (
@@ -518,41 +543,40 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-  {tableData.length === 0 ? (
-    <tr className="empty-row">
-      <td colSpan="7">No Data Available</td>
-    </tr>
-  ) : (
-    tableData.map((row, i) => (
-      <tr key={`${row.id}-${(currentPage - 1) * rowsPerPage + i}`}>
-        <td>{row.id}</td>
-        <td>{row.dealer}</td>
-        <td>{row.claimType}</td>
-        <td>{row.claimWarrantyDate || "-"}</td>
-        <td>{row.processedTime}</td>
+                  {tableData.length === 0 ? (
+                    <tr className="empty-row">
+                      <td colSpan="7">No Data Available</td>
+                    </tr>
+                  ) : (
+                      tableData.map((row, i) => (
+                        <tr key={`${row.id}-${(currentPage - 1) * rowsPerPage + i}`}>
+                          <td>{row.id}</td>
+                          <td>{row.dealer}</td>
+                          <td>{row.claimType}</td>
+                          <td>{row.claimWarrantyDate}</td>
+                          <td>{row.processedTime}</td>
+                          <td>
+                            <button
+                              className="view-action"
+                              onClick={() => {
+                                const safeId = row.id.toString().replace(/\W+/g, "_");
+                                const windowName = `claim_${safeId}`;
 
-        <td>
-          <button
-  className="view-action"
-  onClick={() => {
-    const safeId = row.id.toString().replace(/\W+/g, "_");
-    const windowName = `claim_${safeId}`;
-
-    window.open(
-      `/claim/${encodeURIComponent(row.id)}`,
-      windowName,
-      "width=1300,height=900,left=150,top=80,resizable=yes,scrollbars=yes"
-    );
-  }}
->
-  <FaEye className="eye" />
-  <span className="view-text">View</span>
-</button>
-        </td>
-      </tr>
-    ))
-  )}
-</tbody>
+                                window.open(
+                                  `/claim/${encodeURIComponent(row.id)}`,
+                                  windowName,
+                                  "width=1300,height=900,left=150,top=80,resizable=yes,scrollbars=yes"
+                                );
+                              }}
+                            >
+                              <FaEye className="eye" />
+                              <span className="view-text">View</span>
+                            </button>
+                          </td>
+                        </tr>
+                        ))
+                      )}
+                </tbody>
               </table>
 
               <div className="table-footer">

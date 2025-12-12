@@ -4,6 +4,7 @@ import Logo from "../assets/Logo.png";
 import BgImage from "../assets/bg.png";
 import "./ViewClaim.css";
 import tyrecheck_url from "../constants/tyrecheck.constants.js";
+import LoaderGif from "../assets/black.gif";
 
 const ViewClaim = () => {
   const navigate = useNavigate();
@@ -178,7 +179,7 @@ const ViewClaim = () => {
           setRows(mappedRows);
         }
       } catch (err) {
-        console.error("❌ API Error:", err);
+        console.error("API Error:", err);
         if (mounted) setError(err.message || "Failed to load claim");
       } finally {
         if (mounted) setLoading(false);
@@ -191,12 +192,6 @@ const ViewClaim = () => {
       mounted = false;
     };
   }, [claimMeta.id]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("isAuth");
-    localStorage.removeItem("access_token");
-    navigate("/", { replace: true });
-  };
 
   const handleBack = () => {
     // navigate("/dashboard", { replace: true });
@@ -218,13 +213,6 @@ const ViewClaim = () => {
       return next;
     });
   };
-
-  // const openImagePreview = (img) => {
-  //   setImageModalSrc(img.src);
-  //   setImageModalLabel(img.type);
-  //   setImageModalOpen(true);
-  //   setImageZoomed(false);
-  // };
 
   const openImagePreview = (img) => {
     setImageModalSrc(img.src);
@@ -249,11 +237,42 @@ const ViewClaim = () => {
     setJsonModalOpen(true);
   };
 
-  const handleSubmit = () => {
-    // Currently the original behavior navigated back to dashboard.
-    // You can extend this to send rows back to backend before navigating.
-    navigate("/dashboard");
-  };
+  const handleSubmit = async() => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      for (const r of rows) {
+        const singlePayload = {
+          claim_id: claimMeta.id,
+          remark: r.remark,
+          result_percentage: Number(r.aiPercentage),
+          type: r.image.type,
+          corrected_value: r.editAiResult,
+        };
+
+        const response = await fetch(`${tyrecheck_url}/auth/viewClaim/updateClaimResult`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(singlePayload),
+        });
+
+        if (!response.ok) {
+          const err = await response.text();
+          alert("API Error: " + err);
+          return;
+        }
+      }
+
+      alert("All updates submitted successfully!");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Submit error:", error);
+      alert("Submit failed. Check console.");
+    }
+    };
 
   return (
     <div
@@ -297,124 +316,132 @@ const ViewClaim = () => {
       <section className="table-section">
         <div className="table-card">
           {loading ? (
-            <p style={{ textAlign: "center" }}>Loading...</p>
+            <div className="loading-wrapper">
+              <div className="loading-content">
+                <img src={LoaderGif} alt="loading" className="loading-gif" />
+                <div className="loading-text">Data Loading...</div>
+              </div>
+            </div>
           ) : error ? (
             <p style={{ textAlign: "center", color: "red" }}>Error: {error}</p>
           ) : (
-            <table className="claims-table">
-              <thead>
-                <tr>
-                  <th>Image</th>
-                  <th>Image-Type</th>
-                  <th>AI Result</th>
-                  <th>Edited AI Result</th>
-                  <th>Request Date</th>
-                  <th>Remark</th>
-                  <th>AI Status</th>
-                  <th>AI Result (%)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.length === 0 ? (
+            <>
+              <table className="claims-table">
+                <thead>
                   <tr>
-                    <td colSpan="8">No data available</td>
+                    <th>Image</th>
+                    <th>Image-Type</th>
+                    <th>AI Result</th>
+                    <th>Edited AI Result</th>
+                    <th>Request Date</th>
+                    <th>Remark</th>
+                    <th>AI Status</th>
+                    <th>AI Result (%)</th>
                   </tr>
-                ) : (
-                  rows.map((r, idx) => (
-                    <tr key={r.rowId}>
-                      <td>
-                        <div className="single-image-wrap">
-                          
-                          <div
-                            className="image-thumb-large"
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => r.image.src && openImagePreview(r.image)}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                r.image.src && openImagePreview(r.image);
-                              }
-                            }}
-                          >
-                            {r.image.src ? (
-                              <img src={r.image.src} alt="Image Not Found" />
-                            ) : (
-                              <div className="image-box">No image</div>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="wrap-image-type">
-                          {r.image.type}
-                      </td>
-                      <td className="ai-result-cell">
-                        <div>{r.aiResult.defect}</div>
-                        <div style={{ width: "100%", color: "#000", marginTop: "5%" }}>
-                          <strong>{r.aiResult.finalDefect}</strong>
-                        </div>
-                      </td>
-
-                      <td>
-                        <textarea
-                          className="edit-ai-box"
-                          value={r.editAiResult}
-                          onChange={(e) => updateEditAi(idx, e.target.value)}
-                          placeholder="Edit AI result..."
-                        />
-                      </td>
-
-                      <td className="wrap-date">
-                        <div>{r.requestDate.date}</div>
-                        <div>{r.requestDate.time}</div>
-                      </td>
-
-                      <td>
-                        <input
-                          className="lead-input"
-                          value={r.remark}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setRows((prev) => {
-                              const next = [...prev];
-                              next[idx] = { ...next[idx], remark: val };
-                              return next;
-                            });
-                          }}
-                          placeholder="Remark"
-                        />
-                      </td>
-
-                      <td>
-                        <button className="view-action" onClick={() => openJsonModal(r.aiStatusJson)}>
-                          View
-                        </button>
-                      </td>
-
-                      <td>
-                        <select
-                          className="select-input"
-                          value={r.aiPercentage}
-                          onChange={(e) => updateAiPercent(idx, e.target.value)}
-                        >
-                          <option value="0">0%</option>
-                          <option value="25">25%</option>
-                          <option value="50">50%</option>
-                          <option value="75">75%</option>
-                          <option value="100">100%</option>
-                        </select>
-                      </td>
+                </thead>
+                <tbody>
+                  {rows.length === 0 ? (
+                    <tr>
+                      <td colSpan="8">No data available</td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    rows.map((r, idx) => (
+                      <tr key={r.rowId}>
+                        <td>
+                          <div className="single-image-wrap">
+                            
+                            <div
+                              className="image-thumb-large"
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => r.image.src && openImagePreview(r.image)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  r.image.src && openImagePreview(r.image);
+                                }
+                              }}
+                            >
+                              {r.image.src ? (
+                                <img src={r.image.src} alt="Image Not Found" />
+                              ) : (
+                                <div className="image-box">No image</div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="wrap-image-type">
+                            {r.image.type}
+                        </td>
+                        <td className="ai-result-cell">
+                          <div>{r.aiResult.defect}</div>
+                          <div style={{ width: "100%", color: "#000", marginTop: "5%" }}>
+                            <strong>{r.aiResult.finalDefect}</strong>
+                          </div>
+                        </td>
+
+                        <td>
+                          <textarea
+                            className="edit-ai-box"
+                            value={r.editAiResult}
+                            onChange={(e) => updateEditAi(idx, e.target.value)}
+                            placeholder="Edit AI result..."
+                          />
+                        </td>
+
+                        <td className="wrap-date">
+                          <div>{r.requestDate.date}</div>
+                          <div>{r.requestDate.time}</div>
+                        </td>
+
+                        <td>
+                          <input
+                            className="lead-input"
+                            value={r.remark}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setRows((prev) => {
+                                const next = [...prev];
+                                next[idx] = { ...next[idx], remark: val };
+                                return next;
+                              });
+                            }}
+                            placeholder="Remark"
+                          />
+                        </td>
+
+                        <td>
+                          <button className="view-action" onClick={() => openJsonModal(r.aiStatusJson)}>
+                            View
+                          </button>
+                        </td>
+
+                        <td>
+                          <select
+                            className="select-input"
+                            value={r.aiPercentage}
+                            onChange={(e) => updateAiPercent(idx, e.target.value)}
+                          >
+                            <option value="0">0%</option>
+                            <option value="25">25%</option>
+                            <option value="50">50%</option>
+                            <option value="75">75%</option>
+                            <option value="100">100%</option>
+                          </select>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+              <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+              <button className="search-action-btn" onClick={handleSubmit}>
+                Submit
+              </button>
+              </div>
+            </>
           )}
 
-          <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
-            <button className="search-action-btn" onClick={handleSubmit}>
-              Submit
-            </button>
-          </div>
+          
         </div>
       </section>
 

@@ -295,12 +295,12 @@
 }
 .view-page .claims-table td:nth-child(2),
 .view-page .claims-table th:nth-child(2) {
-  width: 10px !important;
+  width: 300px !important;
   white-space: normal !important;
 }
 .view-page .claims-table td:nth-child(3),
 .view-page .claims-table th:nth-child(3) {
-  width: 50px !important;
+  width: 250px !important;
 }
 .view-page .claims-table td:nth-child(4),
 .view-page .claims-table th:nth-child(4) {
@@ -308,7 +308,7 @@
 }
 .view-page .claims-table td:nth-child(5),
 .view-page .claims-table th:nth-child(5) {
-  width: 200px !important;
+  width: 220px !important;
 }
 .view-page .claims-table td:nth-child(6),
 .view-page .claims-table th:nth-child(6) {
@@ -335,4 +335,30 @@
   line-height: 1.4;
   text-align: left !important;
   max-width: 320px; /* adjust to your preference */
+}
+
+.loading-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40vh; /* centers nicely */
+  width: 100%;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading-gif {
+  width: 80px; 
+  height: auto;
+}
+
+.loading-text {
+  margin-top: 12px;
+  font-size: 18px;
+  color: #444;
+  font-weight: 500;
 }
