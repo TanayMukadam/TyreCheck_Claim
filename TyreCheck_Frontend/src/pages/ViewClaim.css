@@ -325,3 +325,14 @@
   text-align: left;
   line-height: 1.2;
 }
+
+.view-page .claims-table td.ai-result-cell {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+  text-align: left !important;
+  max-width: 320px; /* adjust to your preference */
+}

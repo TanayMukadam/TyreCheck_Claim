@@ -21,6 +21,44 @@ const ViewClaim = () => {
   const [imageModalSrc, setImageModalSrc] = useState(null);
   const [imageModalLabel, setImageModalLabel] = useState("");
   const [imageZoomed, setImageZoomed] = useState(false);
+  const [rotation, setRotation] = useState(0); // rotation in degrees
+  const [scale, setScale] = useState(1);       // zoom level
+  const [dragging, setDragging] = useState(false);
+  const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const rotateLeft = () => setRotation(prev => prev - 90);
+  const rotateRight = () => setRotation(prev => prev + 90);
+  const zoomIn = () => setScale(prev => Math.min(prev + 0.25, 3));
+  const zoomOut = () => setScale(prev => Math.max(prev - 0.25, 1));
+
+
+  const handleMouseDown = (e) => {
+      if (scale === 1) return; // no drag if not zoomed
+      setDragging(true);
+      setDragStart({ x: e.clientX - dragPos.x, y: e.clientY - dragPos.y });
+    };
+
+  const handleMouseMove = (e) => {
+      if (!dragging) return;
+      setDragPos({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      });
+    };
+
+  const handleMouseUp = () => setDragging(false);
+
+  useEffect(() => {
+    if (!imageModalOpen) return;
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [dragging, dragStart, dragPos, imageModalOpen]);
+
+
 
   // claim metadata (prefer nav state, fallback to param)
   const claimMeta = location.state?.claim || {
@@ -181,12 +219,22 @@ const ViewClaim = () => {
     });
   };
 
+  // const openImagePreview = (img) => {
+  //   setImageModalSrc(img.src);
+  //   setImageModalLabel(img.type);
+  //   setImageModalOpen(true);
+  //   setImageZoomed(false);
+  // };
+
   const openImagePreview = (img) => {
     setImageModalSrc(img.src);
     setImageModalLabel(img.type);
     setImageModalOpen(true);
-    setImageZoomed(false);
+    setRotation(0);
+    setScale(1);
+    setDragPos({ x: 0, y: 0 });
   };
+
 
   const closeImageModal = () => {
     setImageModalOpen(false);
@@ -289,7 +337,7 @@ const ViewClaim = () => {
                             }}
                           >
                             {r.image.src ? (
-                              <img src={r.image.src} alt={r.image.type} />
+                              <img src={r.image.src} alt="Image Not Found" />
                             ) : (
                               <div className="image-box">No image</div>
                             )}
@@ -299,7 +347,7 @@ const ViewClaim = () => {
                       <td className="wrap-image-type">
                           {r.image.type}
                       </td>
-                      <td className="wrap-date">
+                      <td className="ai-result-cell">
                         <div>{r.aiResult.defect}</div>
                         <div style={{ width: "100%", color: "#000", marginTop: "5%" }}>
                           <strong>{r.aiResult.finalDefect}</strong>
@@ -378,23 +426,30 @@ const ViewClaim = () => {
             <div className="modal-image-wrap">
               {imageModalSrc ? (
                 <img
-                  src={imageModalSrc}
-                  alt={imageModalLabel}
-                  className={imageZoomed ? "zoomed" : ""}
-                  onClick={toggleImageZoom}
-                  style={{ cursor: imageZoomed ? "zoom-out" : "zoom-in" }}
-                />
+                    src={imageModalSrc}
+                    alt={imageModalLabel}
+                    style={{
+                      transform: `translate(${dragPos.x}px, ${dragPos.y}px) rotate(${rotation}deg) scale(${scale})`,
+                      transition: dragging ? "none" : "transform 0.2s ease",
+                      cursor: scale > 1 ? "grab" : "zoom-in",
+                      maxWidth: "100%",
+                      maxHeight: "80vh",
+                    }}
+                    onMouseDown={handleMouseDown}
+                    onClick={() => {
+                      if (scale === 1) zoomIn(); // click to zoom
+                    }}
+                  />
               ) : (
                 <div style={{ padding: 40, background: "#f4f4f4", borderRadius: 8 }}>No image</div>
               )}
             </div>
             <div className="modal-controls">
-              <button className="modal-btn" onClick={toggleImageZoom}>
-                {imageZoomed ? "Zoom Out" : "Zoom In"}
-              </button>
-              <button className="modal-btn primary" onClick={closeImageModal}>
-                Close
-              </button>
+              <button className="modal-btn" onClick={rotateLeft}>⟲ Rotate Left</button>
+              <button className="modal-btn" onClick={rotateRight}>⟳ Rotate Right</button>
+              <button className="modal-btn" onClick={zoomOut}>➖ Zoom Out</button>
+              <button className="modal-btn" onClick={zoomIn}>➕ Zoom In</button>
+              <button className="modal-btn primary" onClick={closeImageModal}>Close</button>
             </div>
           </div>
         </div>
