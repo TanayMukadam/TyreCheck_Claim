@@ -158,20 +158,44 @@ const Summary = () => {
 
 
   // initial load
+//   useEffect(() => {
+//   (async () => {
+//     await fetchDealerData();
+//     await fetchSummaryData({});
+
+//     const ai = await fetchAiSummary();  // return value
+
+//     setDealerReportData((prev) =>
+//       Array.isArray(prev) && prev.length > 0
+//         ? prev
+//         : ai
+//     );
+//   })();
+// }, []);
+
   useEffect(() => {
-  (async () => {
-    await fetchDealerData();
-    await fetchSummaryData({});
+    const loadData = async () => {
+      try {
+        setLoading(true);
 
-    const ai = await fetchAiSummary();  // return value
+        await fetchDealerData();
+        await fetchSummaryData({});
+        const ai = await fetchAiSummary();
 
-    setDealerReportData((prev) =>
-      Array.isArray(prev) && prev.length > 0
-        ? prev
-        : ai
-    );
-  })();
-}, []);
+        // Set only if dealer data wasn't already populated
+        setDealerReportData((prev) =>
+          Array.isArray(prev) && prev.length > 0 ? prev : ai
+        );
+
+      } catch (error) {
+        console.error("Summary initial load error:", error);
+      } finally {
+        setLoading(false); // <-- runs ONLY after all awaits
+      }
+    };
+
+    loadData();
+  }, []);
 
   const onSearch = (e) => {
     e && e.preventDefault();
@@ -283,7 +307,14 @@ const Summary = () => {
         </div>
       </div>
 
-      {/* CONTENT SECTION */}
+      {loading ? (
+        <div className="loading-wrapper">
+          <div className="loading-content">
+            <img src={LoaderGif} alt="loading" className="loading-gif" />
+            <div className="loading-text">Data Loading...</div>
+          </div>
+        </div>
+      ) : (
       <section className="table-section">
         <div className="table-card">
           {/* CLAIM - AI RESULT */}
@@ -457,15 +488,9 @@ const Summary = () => {
             </div>
           )}
 
-          {loading && <div className="loading-wrapper">
-                        <div className="loading-content">
-                          <img src={LoaderGif} alt="loading" className="loading-gif" />
-                          <div className="loading-text">Data Loading...</div>
-                        </div>
-                      </div>
-                      }
         </div>
       </section>
+      ) }
     </div>
   );
 };
