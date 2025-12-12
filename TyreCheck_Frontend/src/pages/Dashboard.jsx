@@ -347,45 +347,101 @@ const Dashboard = () => {
   /* ---------------------------
      CSV export
      ---------------------------*/
-  const exportToCSV = () => {
-    if (!tableData || tableData.length === 0) {
-      alert("No data to export");
-      return;
-    }
-
+  const exportCSV = async () => {
+  try {
+    // CSV headers
     const headers = [
       "ClaimWarrantyId",
       "DealerName",
-      "ClaimType",
-      "ClaimWarrantyDate",
-      "ProcessedTime",
+      "DealerCode",
+      "OutsideDamage",
+      "InsideDamage",
+      "FinalDamage",
+      "TreadDepthGauge",
+      "ClaimDate",
+      "OutsideException",
+      "InsideException",
+      "FinalException",
+      "GaugeException",
     ];
 
-    const rows = tableData.map((r) => [
-      r.id ?? "",
-      r.dealer ?? "",
-      r.claimType ?? "",
-      r.claimWarrantyDate ?? r.createdDateRaw ?? "",
-      r.processedTime ?? "",
+    // Prepare API request body using filters (null if empty)
+    const body = {
+      claim_id: leadId || null,
+      fromDate: filterStartDate || null,
+      toDate: filterEndDate || null,
+      dealer_code: dealerFilterCode || null,
+    };
+
+    const token = localStorage.getItem("access_token");
+
+    // Fetch data from API
+    const response = await fetch(`${tyrecheck_url}/auth/claim/export_pdf`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const dataToExport = await response.json();
+
+    if (!dataToExport || dataToExport.length === 0) {
+      alert("No data returned from API for the given filters");
+      return;
+    }
+
+    // Map data to CSV rows
+    const rows = dataToExport.map((r) => [
+      r.Claim_Warranty_Id ?? "",
+      r.Dealer_name ?? "",
+      r.Dealer_Code ?? "",
+      r.OutsideDamageOutput ?? "",
+      r.InsideDamageOutput ?? "",
+      r.FinalDamageOutput ?? "",
+      r.TreadDepthGaugeOutput ?? "",
+      r.ClaimDate ? new Date(r.ClaimDate).toLocaleString() : "",
+      r.OutsideException_Occurred ?? "",
+      r.InsideException_Occurred ?? "",
+      r.FinalException_Occurred ?? "",
+      r.GaugeException_Occurred ?? "",
     ]);
 
+    // Convert to CSV string
     const csvContent = [
       headers.join(","),
       ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")),
     ].join("\n");
 
+    // Download CSV
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
+
     const now = new Date();
     const ts = now.toISOString().slice(0, 19).replace(/[:T]/g, "-");
-    a.download = `claims_export_page${currentPage}_${ts}.csv`;
+    a.download = `claims_export_API_${ts}.csv`;
+
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  };
+
+    console.log("CSV exported successfully from API!");
+  } catch (err) {
+    console.error("Failed to export CSV:", err);
+    alert("Failed to export CSV. Check console for details.");
+  }
+};
+
+
+
 
   const handleLogout = () => {
     localStorage.removeItem("isAuth");
@@ -504,13 +560,13 @@ const Dashboard = () => {
               </button>
 
               <button
-                type="button"
-                className="search-action-btn export-btn"
-                onClick={exportToCSV}
-              >
-                <RiFileExcel2Line className="export-icon" />
-                <span>Export</span>
-              </button>
+  type="button"
+  className="search-action-btn export-btn"
+  onClick={exportCSV}
+>
+  <RiFileExcel2Line className="export-icon" />
+  <span>Export</span>
+</button>
               {/* big Clear button intentionally removed */}
             </div>
           </div>

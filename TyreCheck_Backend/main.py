@@ -7,7 +7,7 @@ from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 #Routing
 from Routes.userRoutes import public_user_router
-from Routes.dashboardRoute import protected_user_router
+from Routes.dashboardRoute import protected_dashboard_router
 from Routes.viewClaimRoutes import protected_claimView_route
 from Routes.summaryRoute import protected_summary_route
 from Routes.dealersRoute import protected_dealer_route
@@ -29,7 +29,7 @@ shared_folder_path = Path(__file__).parent.parent / "shared_uploads"
 app.mount("/protected_claim/images", StaticFiles(directory=shared_folder_path), name="images")
 
 app.include_router(public_user_router, prefix="/auth")
-app.include_router(protected_user_router, prefix="/auth")
+app.include_router(protected_dashboard_router, prefix="/auth")
 app.include_router(protected_claimView_route, prefix="/auth")
 app.include_router(protected_summary_route, prefix="/auth")
 app.include_router(protected_dealer_route, prefix="/auth")

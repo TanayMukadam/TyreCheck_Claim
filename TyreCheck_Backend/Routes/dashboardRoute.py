@@ -4,14 +4,14 @@ from Utils.auth import get_current_user
 from Database.database import get_db
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from Schemas.claimSchema import ClaimWarrantySPRequest, ClaimWarrantySPSchema, PaginatedClaimSPResponse
+from Schemas.claimSchema import ClaimWarrantySPRequest, ClaimWarrantySPSchema, PaginatedClaimSPResponse, exportPDF
 from typing import Optional, List
 from pydantic import BaseModel
 
 import logging
 logger = logging.getLogger(__name__)
 # Protected router: all routes here require a valid Bearer token
-protected_user_router = APIRouter(
+protected_dashboard_router = APIRouter(
     prefix="/claim",
     tags=["Dashboard Page Routes"],
     dependencies=[Depends(get_current_user)] 
@@ -21,7 +21,7 @@ protected_user_router = APIRouter(
 
 
 
-@protected_user_router.post("/details", response_model=PaginatedClaimSPResponse)
+@protected_dashboard_router.post("/details", response_model=PaginatedClaimSPResponse)
 async def access_with_sp_paged_iso(
     request: ClaimWarrantySPRequest,
     per_page: int = Query(10, ge=1, le=100),
@@ -119,3 +119,64 @@ async def access_with_sp_paged_iso(
             pass
         # return a slightly more helpful message for dev; remove `str(exc)` in production
         raise HTTPException(status_code=500, detail=f"Server error while fetching paged data: {str(exc)}")
+
+
+
+
+
+
+
+
+
+
+@protected_dashboard_router.post("/export_pdf")
+async def export_pdf_route(export_model: exportPDF, db: Session = Depends(get_db)):
+    try:
+        print("From date -->", export_model.fromDate)
+        print("To date -->", export_model.toDate)
+        print("Claim ID -->", export_model.claim_id)
+        print("Dealer Code -->", export_model.dealer_code)
+
+        # Convert empty strings to None to handle optional parameters
+        claim_id = export_model.claim_id or None
+        dealer_code = export_model.dealer_code or None
+        from_date = export_model.fromDate or None
+        to_date = export_model.toDate or None
+
+        # If all filters are None, fetch all (optionally limit for safety)
+        if not any([claim_id, dealer_code, from_date, to_date]):
+            result = db.execute(
+                text("CALL tyrecheck.usp_getTyreReportFiltered(NULL, NULL, NULL, NULL)")
+            )
+            rows = result.fetchall()
+            columns = result.keys()
+            # Optional: limit rows to first 10
+            response = [dict(zip(columns, row)) for row in rows[:10]]
+            return response
+
+        # Call stored procedure with filters
+        sql = text("""
+            CALL tyrecheck.usp_getTyreReportFiltered(
+                :p_claim,
+                :p_FromDate,
+                :p_ToDate,
+                :p_dealer
+            )
+        """)
+
+        result = db.execute(sql, {
+            "p_claim": claim_id,
+            "p_FromDate": from_date,
+            "p_ToDate": to_date,
+            "p_dealer": dealer_code
+        })
+
+        rows = result.fetchall()
+        columns = result.keys()
+        response = [dict(zip(columns, row)) for row in rows]
+
+        return response
+
+    except Exception as e:
+        print(f"Export PDF Route Error: {e}")
+        raise e

@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, List
+from datetime import date
 
 class ClaimWarrantySPRequest(BaseModel):
     ClaimWarrantyId: Optional[str] = None
@@ -75,3 +76,17 @@ class ai_summary(BaseModel):
     service_type : str = "claim"
     fromDate : Optional[str] = None
     toDate : Optional[str] = None
+    
+    
+    
+class exportPDF(BaseModel):
+    claim_id: Optional[str] = None
+    fromDate: Optional[str] = None
+    toDate: Optional[str] = None
+    dealer_code: Optional[str] = None
+
+
+# class exportPDF(BaseModel):
+#     claim_id: str | None
+#     date: date | None
+#     dealer_code: str | None
