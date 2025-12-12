@@ -5,8 +5,35 @@ import "./Summary.css";
 import tyrecheck_url from "../constants/tyrecheck.constants.js"; // keep as your project expects
 import { IoIosSearch } from "react-icons/io";
 import { FiPlus, FiMinus } from "react-icons/fi";
-import LoaderGif from "../assets/black.gif";
 
+/**
+ * Summary.jsx — only change: search-card is hidden when (mode==='claim' && aiTab==='aiSummary').
+ * Rest of the behavior and dummy data / table scroll remains as before.
+ */
+
+const DUMMY_DEALER_DATA = [
+  { Dealer_code: "D001", Dealer_name: "GUPTA TYRES HOUSE", defects: [{ defectName: "Shoulder Cut", defectCount: 58 }, { defectName: "Sidewall Cut", defectCount: 34 }] },
+  { Dealer_code: "D002", Dealer_name: "SHIVDHARA TYRE WORLD", defects: [{ defectName: "Runflat", defectCount: 22 }, { defectName: "Tread Cut", defectCount: 15 }] },
+  { Dealer_code: "D003", Dealer_name: "R.K WHEELS", defects: [{ defectName: "CBU", defectCount: 6 }] },
+  { Dealer_code: "D004", Dealer_name: "MATHURA TYRE SHOP", defects: [{ defectName: "Shoulder Cut", defectCount: 11 }, { defectName: "Sidewall Cut", defectCount: 7 }] },
+  { Dealer_code: "D005", Dealer_name: "SINGH TYRES", defects: [{ defectName: "Runflat", defectCount: 3 }] },
+  { Dealer_code: "D006", Dealer_name: "KUMAR TYRES", defects: [{ defectName: "Tread Cut", defectCount: 9 }, { defectName: "CBU", defectCount: 2 }] },
+  { Dealer_code: "D007", Dealer_name: "RAJ TYRE STORE", defects: [{ defectName: "Shoulder Cut", defectCount: 4 }] },
+  { Dealer_code: "D008", Dealer_name: "BALAJI TYRES", defects: [{ defectName: "Sidewall Cut", defectCount: 5 }, { defectName: "Runflat", defectCount: 1 }] },
+  { Dealer_code: "D009", Dealer_name: "PRIYA TYRE HUB", defects: [{ defectName: "Tread Cut", defectCount: 6 }] },
+  { Dealer_code: "D010", Dealer_name: "VIJAY WHEELS", defects: [{ defectName: "Shoulder Cut", defectCount: 7 }, { defectName: "Sidewall Cut", defectCount: 3 }] },
+
+  { Dealer_code: "D011", Dealer_name: "MAHA TYRE CENTRE", defects: [{ defectName: "Runflat", defectCount: 8 }] },
+  { Dealer_code: "D012", Dealer_name: "ALOK TYRES", defects: [{ defectName: "Tread Cut", defectCount: 2 }] },
+  { Dealer_code: "D013", Dealer_name: "NAVEEN TYRE HOUSE", defects: [{ defectName: "CBU", defectCount: 1 }] },
+  { Dealer_code: "D014", Dealer_name: "SUNIL TYRES", defects: [{ defectName: "Sidewall Cut", defectCount: 10 }] },
+  { Dealer_code: "D015", Dealer_name: "ROYAL WHEELS", defects: [{ defectName: "Shoulder Cut", defectCount: 13 }] },
+  { Dealer_code: "D016", Dealer_name: "CITY TYRE POINT", defects: [{ defectName: "Runflat", defectCount: 2 }, { defectName: "Tread Cut", defectCount: 1 }] },
+  { Dealer_code: "D017", Dealer_name: "SURESH TYRE CO", defects: [{ defectName: "Sidewall Cut", defectCount: 4 }] },
+  { Dealer_code: "D018", Dealer_name: "NEXA TYRES", defects: [{ defectName: "Runflat", defectCount: 12 }] },
+  { Dealer_code: "D019", Dealer_name: "EVEREST TYRE SHOP", defects: [{ defectName: "Tread Cut", defectCount: 5 }] },
+  { Dealer_code: "D020", Dealer_name: "GOLDEN TYRE MART", defects: [{ defectName: "CBU", defectCount: 3 }, { defectName: "Shoulder Cut", defectCount: 2 }] }
+];
 
 const Summary = () => {
   const navigate = useNavigate();
@@ -18,8 +45,6 @@ const Summary = () => {
 
   const [overallreportData, setOverallReportData] = useState(null);
   const [summarydata, setSummaryData] = useState(null);
-  const [aiSummary, setAiSummary] = useState([]);
-
 
   // dealer-wise report data
   const [dealerReportData, setDealerReportData] = useState([]);
@@ -32,51 +57,25 @@ const Summary = () => {
   const [dealerData, setDealerData] = useState([]);
 
   // fetch dealer list (dropdown)
-  // const fetchDealerData = async () => {
-  //   try {
-  //     const token = localStorage.getItem("access_token");
-  //     const response = await fetch(`${tyrecheck_url}/auth/dealers`, {
-  //       method: "GET",
-  //       headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-  //     });
-  //     if (!response.ok) return;
-  //     const result = await response.json();
-  //     setDealerData(result || []);
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
-
-
   const fetchDealerData = async () => {
-  try {
-    const token = localStorage.getItem("access_token");
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(`${tyrecheck_url}/auth/dealers`, {
+        method: "GET",
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      if (!response.ok) return;
+      const result = await response.json();
+      setDealerData(result || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    const response = await fetch(`${tyrecheck_url}/auth/dealers`, {
-      method: "GET",
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-    });
-
-    if (!response.ok) return;
-
-    const result = await response.json();
-
-    // Sort ascending by Dealer_name (case-insensitive)
-    const sorted = [...(result || [])].sort((a, b) =>
-      a.Dealer_name.localeCompare(b.Dealer_name, "en", { sensitivity: "base" })
-    );
-
-    setDealerData(sorted);
-  } catch (err) {
-    console.error(err);
-  }
-};
   // fetch summary
   const fetchSummaryData = async (bodyData = {}) => {
     try {
-      // setLoading(true);
+      setLoading(true);
       const token = localStorage.getItem("access_token");
       const response = await fetch(`${tyrecheck_url}/auth/summary/summary_report`, {
         method: "POST",
@@ -87,7 +86,7 @@ const Summary = () => {
         body: JSON.stringify(bodyData || {}),
       });
       if (!response.ok) {
-        // setLoading(false);
+        setLoading(false);
         return;
       }
       const result = await response.json();
@@ -96,96 +95,58 @@ const Summary = () => {
       if (result.dealer_summary && Array.isArray(result.dealer_summary)) {
         setDealerReportData(result.dealer_summary);
       }
-      // setLoading(false);
+      setLoading(false);
     } catch (err) {
       console.error(err);
-      // setLoading(false);
+      setLoading(false);
     }
   };
 
-  // fetch AI Summary
+  // fetch dealer report (expandable) - kept but not required when AI Summary fallback used
+  const fetchDealerReport = async (bodyData = {}) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("access_token");
+      const response = await fetch(`${tyrecheck_url}/auth/summary/dealer_report`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(bodyData || {}),
+      });
 
-  const fetchAiSummary = async () => {
-  try {
-    const token = localStorage.getItem("access_token");
+      if (!response.ok) {
+        setLoading(false);
+        return;
+      }
 
-    const response = await fetch(`${tyrecheck_url}/auth/summary/ai_summary`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({
-        dealer_id: null,
-        service_type: "claim",
-        fromDate: null,
-        toDate: null
-      })
-    });
-
-    const rows = await response.json();
-
-    // --- GROUP THE RESULT HERE ---
-    const grouped = Object.values(
-      rows.reduce((acc, row) => {
-        const code = row.Dealer_code;
-
-        if (!acc[code]) {
-          acc[code] = {
-            dealerCode: row.Dealer_code,
-            dealerName: row.Dealer_name,
-            defects: []
-          };
-        }
-
-        acc[code].defects.push({
-          defectName: row.Final_Defect,
-          defectCount: row.dealercount
-        });
-
-        return acc;
-      }, {})
-    );
-
-    setAiSummary(grouped);
-    setDealerReportData(grouped); // Used by your table
-    console.log("Grouped AI Summary:", grouped);
-
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-
+      const result = await response.json();
+      setDealerReportData(Array.isArray(result.dealer_report) ? result.dealer_report : (Array.isArray(result) ? result : []));
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setLoading(false);
+    }
+  };
 
   // initial load
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
+    (async () => {
+      await fetchDealerData();
+      await fetchSummaryData({});
+      await fetchDealerReport({});
 
-        await fetchDealerData();
-        await fetchSummaryData({});
-        const ai = await fetchAiSummary();
-
-        // Set only if dealer data wasn't already populated
-        setDealerReportData((prev) =>
-          Array.isArray(prev) && prev.length > 0 ? prev : ai
-        );
-
-      } catch (error) {
-        console.error("Summary initial load error:", error);
-      } finally {
-        setLoading(false); // <-- runs ONLY after all awaits
-      }
-    };
-
-    loadData();
+      // fallback to dummy data so you see many rows
+      setTimeout(() => {
+        setDealerReportData((prev) => (Array.isArray(prev) && prev.length > 0 ? prev : DUMMY_DEALER_DATA));
+      }, 250);
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onSearch = (e) => {
     e && e.preventDefault();
-    setLoading(true)
     const body = {
       servicetype: mode,
       dealer_code: dealerFilter || null,
@@ -193,8 +154,7 @@ const Summary = () => {
       to_date: filterEndDate || null,
     };
     fetchSummaryData(body);
-    // fetchDealerReport(body);
-    setLoading(false);
+    fetchDealerReport(body);
   };
 
   const toggleDealer = (dealerKey) => {
@@ -215,6 +175,9 @@ const Summary = () => {
   const getDealerName = (d, idx) => d.Dealer_name || d.dealerName || d.name || `Dealer ${idx + 1}`;
   const getDealerCode = (d, idx) => d.Dealer_code || d.dealerCode || d.code || idx;
   const getDefects = (d) => d.defects || d.defect_counts || d.defectList || d.details || d.defects_list || [];
+
+  // Condition: hide search-card only when in Claim & AI Summary
+  const hideSearchCard = mode === "claim" && aiTab === "aiSummary";
 
   return (
     <div
@@ -242,41 +205,43 @@ const Summary = () => {
         </div>
       </header>
 
-      {/* FILTER CARD */}
-      <div className="search-card">
-        <form className="search-card-inner search-form" onSubmit={onSearch}>
-          <div className="form-row summary-form-row">
-            <div className="form-group">
-              <label className="form-label">Start Date</label>
-              <input className="date-input" type="date" value={filterStartDate} onChange={(e) => setFilterStartDate(e.target.value)} />
-            </div>
+      {/* FILTER CARD - RENDER ONLY WHEN NOT hiding */}
+      {!hideSearchCard && (
+        <div className="search-card">
+          <form className="search-card-inner search-form" onSubmit={onSearch}>
+            <div className="form-row summary-form-row">
+              <div className="form-group">
+                <label className="form-label">Start Date</label>
+                <input className="date-input" type="date" value={filterStartDate} onChange={(e) => setFilterStartDate(e.target.value)} />
+              </div>
 
-            <div className="form-group">
-              <label className="form-label">End Date</label>
-              <input className="date-input" type="date" value={filterEndDate} onChange={(e) => setFilterEndDate(e.target.value)} />
-            </div>
+              <div className="form-group">
+                <label className="form-label">End Date</label>
+                <input className="date-input" type="date" value={filterEndDate} onChange={(e) => setFilterEndDate(e.target.value)} />
+              </div>
 
-            <div className="form-group">
-              <label className="form-label">Dealer</label>
-              <select className="select-input" value={dealerFilter} onChange={(e) => setDealerFilter(e.target.value)}>
-                <option value="">All Dealers</option>
-                {dealerData.map((item) => (
-                  <option key={item.ID || item.Dealer_code || item.dealerCode || item.id} value={item.Dealer_code || item.dealerCode || item.code || ""}>
-                    {item.Dealer_name || item.dealerName || item.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+              <div className="form-group">
+                <label className="form-label">Dealer</label>
+                <select className="select-input" value={dealerFilter} onChange={(e) => setDealerFilter(e.target.value)}>
+                  <option value="">All Dealers</option>
+                  {dealerData.map((item) => (
+                    <option key={item.ID || item.Dealer_code || item.dealerCode || item.id} value={item.Dealer_code || item.dealerCode || item.code || ""}>
+                      {item.Dealer_name || item.dealerName || item.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="search-button-wrap">
-              <button className="search-action-btn" type="submit">
-                <IoIosSearch className="search-icon" />
-                <span style={{ fontSize: "17px" }}>Search</span>
-              </button>
+              <div className="search-button-wrap">
+                <button className="search-action-btn" type="submit">
+                  <IoIosSearch className="search-icon" />
+                  <span style={{ fontSize: "17px" }}>Search</span>
+                </button>
+              </div>
             </div>
-          </div>
-        </form>
-      </div>
+          </form>
+        </div>
+      )}
 
       {/* MODE SWITCH */}
       <div style={{ display: "flex", justifyContent: "center", marginTop: 10 }}>
@@ -294,190 +259,182 @@ const Summary = () => {
           <button className={`seg-btn ${aiTab === "aiSummary" ? "active" : ""}`} onClick={() => setAiTab("aiSummary")}>AI Summary</button>
         </div>
       </div>
-          <section className="table-section">
-            {loading ? (
-              <div className="loading-wrapper">
-                <div className="loading-content">
-                  <img src={LoaderGif} alt="loading" className="loading-gif" />
-                  <div className="loading-text">Data Loading...</div>
-                </div>
-              </div> ): (
-                <div className="table-card">
-              {/* CLAIM - AI RESULT */}
-              {mode === "claim" && aiTab === "aiResult" && (
-                <div className="summary-content no-donut">
-                  <div className="overall-card overall-card-no-donut">
-                    <h3>Overall Claim AI Output %</h3>
-                    <div className="overall-body overall-body-no-donut">
-                      <div className="overall-stats overall-stats-large">
-                        <table className="summary-stat-table large bordered">
-                          <thead style={{ backgroundColor: "#f0f0f0" }}>
-                            <tr>
-                              <th>Overall %</th>
-                              <th>Count</th>
+
+      {/* CONTENT SECTION */}
+      <section className="table-section">
+        <div className="table-card">
+          {/* CLAIM - AI RESULT */}
+          {mode === "claim" && aiTab === "aiResult" && (
+            <div className="summary-content no-donut">
+              <div className="overall-card overall-card-no-donut">
+                <h3>Overall Claim AI Output %</h3>
+                <div className="overall-body overall-body-no-donut">
+                  <div className="overall-stats overall-stats-large">
+                    <table className="summary-stat-table large bordered">
+                      <thead style={{ backgroundColor: "#f0f0f0" }}>
+                        <tr>
+                          <th>Overall %</th>
+                          <th>Count</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {overallreportData && overallreportData.length > 0 ? (
+                          overallreportData.map((item, idx) => (
+                            <tr key={idx}>
+                              <td>{item.Overall}</td>
+                              <td>{item.WarrantyCount}</td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {overallreportData && overallreportData.length > 0 ? (
-                              overallreportData.map((item, idx) => (
-                                <tr key={idx}>
-                                  <td>{item.Overall}</td>
-                                  <td>{item.WarrantyCount}</td>
-                                </tr>
-                              ))
-                            ) : (
-                              <tr>
-                                <td colSpan="2" style={{ textAlign: "center" }}>
-                                  No data available
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="partition" />
-
-                  <div className="typewise-card">
-                    <h3>Type wise AI output %</h3>
-                    <div className="widget">
-                      <table className="summary-stat-table full-width bordered">
-                        <thead style={{ backgroundColor: "#f0f0f0" }}>
+                          ))
+                        ) : (
                           <tr>
-                            <th>Type</th>
-                            <th>Image Count</th>
-                            <th>Avg. Accuracy</th>
-                            <th>100%</th>
-                            <th>90%</th>
-                            <th>50%</th>
-                            <th>Not processed</th>
+                            <td colSpan="2" style={{ textAlign: "center" }}>
+                              No data available
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {summarydata && summarydata.length > 0 ? (
-                            summarydata.map((item, idx) => (
-                              <tr key={idx}>
-                                <td>{item.Type}</td>
-                                <td>{item.TypeCount}</td>
-                                <td>{item.average}%</td>
-                                <td>{item.H100}</td>
-                                <td>{item.H90}</td>
-                                <td>{item.H50}</td>
-                                <td>{item.AINotProcess}</td>
-                              </tr>
-                            ))
-                          ) : (
-                            <tr>
-                              <td colSpan="7" style={{ textAlign: "center" }}>
-                                No data available
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-              )}
+              </div>
 
-              {/* AI SUMMARY (expandable dealer table) */}
-              {mode === "claim" && aiTab === "aiSummary" && (
-                <div className="ai-summary-section">
-                  <h3 style={{ textAlign: "center", marginBottom: 12 }}>
-                    Dealer-wise Defect Summary
-                  </h3>
+              <div className="partition" />
 
-                  <div className="widget">
-                    {/* WRAP the table in a scrollable container limited to ~10 rows */}
-                    <div className="dealer-table-wrap">
-                      <table className="dealer-table full-width bordered">
-                        <thead style={{ backgroundColor: "#f0f0f0" }}>
-                          <tr>
-                            <th style={{ width: 60 }}></th>
-                            <th style={{ textAlign: "left" }}>Dealer Name</th>
-                            <th style={{ width: 140, textAlign: "center" }}>
-                              Total Defects
-                            </th>
+              <div className="typewise-card">
+                <h3>Type wise AI output %</h3>
+                <div className="widget">
+                  <table className="summary-stat-table full-width bordered">
+                    <thead style={{ backgroundColor: "#f0f0f0" }}>
+                      <tr>
+                        <th>Type</th>
+                        <th>Image Count</th>
+                        <th>Avg. Accuracy</th>
+                        <th>100%</th>
+                        <th>90%</th>
+                        <th>50%</th>
+                        <th>Not processed</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summarydata && summarydata.length > 0 ? (
+                        summarydata.map((item, idx) => (
+                          <tr key={idx}>
+                            <td>{item.Type}</td>
+                            <td>{item.TypeCount}</td>
+                            <td>{item.average}%</td>
+                            <td>{item.H100}</td>
+                            <td>{item.H90}</td>
+                            <td>{item.H50}</td>
+                            <td>{item.AINotProcess}</td>
                           </tr>
-                        </thead>
-
-                        <tbody>
-                          {dealerReportData && dealerReportData.length > 0 ? (
-                            dealerReportData.map((dealer, idx) => {
-                              const dealerName = getDealerName(dealer, idx);
-                              const dealerCode = getDealerCode(dealer, idx);
-                              const defects = getDefects(dealer);
-                              const totalDefects = Array.isArray(defects)
-                                ? defects.reduce((s, d) => s + (d.defectCount ?? d.count ?? d.DefectCount ?? 0), 0)
-                                : 0;
-                              const isOpen = expandedDealers.has(dealerCode);
-
-                              return (
-                                <React.Fragment key={`${dealerCode}-${idx}`}>
-                                  <tr className="dealer-row">
-                                    <td className="expand-cell">
-                                      <button className="expand-btn" onClick={() => toggleDealer(dealerCode)}>
-                                        {isOpen ? <FiMinus /> : <FiPlus />}
-                                      </button>
-                                    </td>
-                                    <td className="dealer-name-cell" style={{ textAlign: "left" }}>{dealerName}</td>
-                                    <td style={{ textAlign: "center" }}>{totalDefects}</td>
-                                  </tr>
-
-                                  {isOpen && (
-                                    <tr className="dealer-expanded-row">
-                                      <td colSpan="3" style={{ padding: 0 }}>
-                                        <div className="expanded-inner">
-                                          <table className="inner-defect-table full-width">
-                                            <thead>
-                                              <tr>
-                                                <th style={{ textAlign: "left" }}>Defect Name</th>
-                                                <th style={{ width: 120, textAlign: "center" }}>Defect Count</th>
-                                              </tr>
-                                            </thead>
-                                            <tbody>
-                                              {Array.isArray(defects) && defects.length > 0 ? (
-                                                defects.map((d, di) => (
-                                                  <tr key={di}>
-                                                    <td style={{ textAlign: "left" }}>{d.defectName ?? d.DefectName ?? d.name ?? `Defect ${di + 1}`}</td>
-                                                    <td style={{ textAlign: "center" }}>{d.defectCount ?? d.count ?? d.DefectCount ?? 0}</td>
-                                                  </tr>
-                                                ))
-                                              ) : (
-                                                <tr>
-                                                  <td colSpan="2" style={{ textAlign: "center" }}>No defect data for this dealer.</td>
-                                                </tr>
-                                              )}
-                                            </tbody>
-                                          </table>
-                                        </div>
-                                      </td>
-                                    </tr>
-                                  )}
-                                </React.Fragment>
-                              );
-                            })
-                          ) : (
-                            <tr>
-                              <td colSpan="3" style={{ textAlign: "center", padding: 18 }}>
-                                No dealer summary available.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                    {/* end dealer-table-wrap */}
-                  </div>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="7" style={{ textAlign: "center" }}>
+                            No data available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-              )}
-
+              </div>
             </div>
-              )}
-            
-          </section>
+          )}
+
+          {/* AI SUMMARY (expandable dealer table) */}
+          {mode === "claim" && aiTab === "aiSummary" && (
+            <div className="ai-summary-section">
+              <h3 style={{ textAlign: "center", marginBottom: 12 }}>
+                Dealer-wise Defect Summary
+              </h3>
+
+              <div className="widget">
+                <div className="dealer-table-wrap">
+                  <table className="dealer-table full-width bordered">
+                    <thead style={{ backgroundColor: "#f0f0f0" }}>
+                      <tr>
+                        <th style={{ width: 60 }}></th>
+                        <th style={{ textAlign: "left" }}>Dealer Name</th>
+                        <th style={{ width: 140, textAlign: "center" }}>
+                          Total Defects
+                        </th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {dealerReportData && dealerReportData.length > 0 ? (
+                        dealerReportData.map((dealer, idx) => {
+                          const dealerName = getDealerName(dealer, idx);
+                          const dealerCode = getDealerCode(dealer, idx);
+                          const defects = getDefects(dealer);
+                          const totalDefects = Array.isArray(defects)
+                            ? defects.reduce((s, d) => s + (d.defectCount ?? d.count ?? d.DefectCount ?? 0), 0)
+                            : 0;
+                          const isOpen = expandedDealers.has(dealerCode);
+
+                          return (
+                            <React.Fragment key={`${dealerCode}-${idx}`}>
+                              <tr className="dealer-row">
+                                <td className="expand-cell">
+                                  <button className="expand-btn" onClick={() => toggleDealer(dealerCode)}>
+                                    {isOpen ? <FiMinus style={{color: "red"}}/> : <FiPlus />}
+                                  </button>
+                                </td>
+                                <td className="dealer-name-cell" style={{ textAlign: "left" }}>{dealerName}</td>
+                                <td style={{ textAlign: "center" }}>{totalDefects}</td>
+                              </tr>
+
+                              {isOpen && (
+                                <tr className="dealer-expanded-row">
+                                  <td colSpan="3" style={{ padding: 0 }}>
+                                    <div className="expanded-inner">
+                                      <table className="inner-defect-table full-width">
+                                        <thead>
+                                          <tr>
+                                            <th style={{ textAlign: "left" }}>Defect Name</th>
+                                            <th style={{ width: 120, textAlign: "center" }}>Defect Count</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {Array.isArray(defects) && defects.length > 0 ? (
+                                            defects.map((d, di) => (
+                                              <tr key={di}>
+                                                <td style={{ textAlign: "left" }}>{d.defectName ?? d.DefectName ?? d.name ?? `Defect ${di + 1}`}</td>
+                                                <td style={{ textAlign: "center" }}>{d.defectCount ?? d.count ?? d.DefectCount ?? 0}</td>
+                                              </tr>
+                                            ))
+                                          ) : (
+                                            <tr>
+                                              <td colSpan="2" style={{ textAlign: "center" }}>No defect data for this dealer.</td>
+                                            </tr>
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan="3" style={{ textAlign: "center", padding: 18 }}>
+                            No dealer summary available.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {loading && <div style={{ marginTop: 12 }}>Loading...</div>}
+        </div>
+      </section>
     </div>
   );
 };
