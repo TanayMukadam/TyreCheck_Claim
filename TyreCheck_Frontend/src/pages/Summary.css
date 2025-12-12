@@ -188,7 +188,8 @@
   align-items:center; 
   justify-content:center; 
   color:#666; 
-  font-style:italic; }
+  font-style:italic; 
+}
 
 /* position AI control row to the right in wide screens */
 .summary-page .ai-control-row { 
@@ -206,7 +207,6 @@
   font-size: 13px; 
   vertical-align: middle; 
 }
-
 .dealer-table thead th { 
   font-size: 18px; 
   background: #f0f0f0; 
@@ -243,7 +243,6 @@
   border-collapse: collapse; 
   width: 100%; 
 }
-
 .inner-defect-table th, .inner-defect-table td {
   padding: 8px 12px;
   border: 1px solid #f0f0f0;
@@ -255,6 +254,19 @@
 .inner-defect-table thead th:last-child { text-align: center; }
 .inner-defect-table td:first-child { text-align: left; }
 .inner-defect-table td:last-child { text-align: center; }
+
+/* ========= NEW: table wrap to limit visible rows to ~10 ========= */
+/* This keeps card height the same and adds vertical scroll when >10 rows */
+.dealer-table-wrap {
+  /* approximate: 10 rows * ~48px per row + some header space = ~520px */
+  max-height: 520px;
+  overflow-y: auto;
+  border-radius: 6px;
+}
+
+/* keep scrollbar subtle */
+.dealer-table-wrap::-webkit-scrollbar { width: 10px; }
+.dealer-table-wrap::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.06); border-radius: 6px; }
 
 /* responsiveness */
 @media (max-width:1200px) {

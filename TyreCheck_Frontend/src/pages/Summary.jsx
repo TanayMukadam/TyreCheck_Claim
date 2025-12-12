@@ -1,41 +1,39 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/Logo.png";
-import BgImage from "../assets/bg.png";
 import "./Summary.css";
 import tyrecheck_url from "../constants/tyrecheck.constants.js"; // keep as your project expects
 import { IoIosSearch } from "react-icons/io";
 import { FiPlus, FiMinus } from "react-icons/fi";
 
+/**
+ * Keep design unchanged — only update dealer table behavior:
+ * - more dummy data (20 dealers)
+ * - scroll within card limited to ~10 rows
+ */
+
 const DUMMY_DEALER_DATA = [
-  {
-    Dealer_code: "D001",
-    Dealer_name: "GUPTA TYRES HOUSE",
-    defects: [
-      { defectName: "Shoulder Cut", defectCount: 58 },
-      { defectName: "Sidewall Cut", defectCount: 34 },
-      { defectName: "Runflat", defectCount: 22 },
-      { defectName: "Tread Cut", defectCount: 15 },
-      { defectName: "CBU", defectCount: 6 },
-    ],
-  },
-  {
-    Dealer_code: "D002",
-    Dealer_name: "SHIVDHARA TYRE WORLD",
-    defects: [
-      { defectName: "Shoulder Cut", defectCount: 12 },
-      { defectName: "Sidewall Cut", defectCount: 8 },
-    ],
-  },
-  {
-    Dealer_code: "D003",
-    Dealer_name: "R.K WHEELS",
-    defects: [
-      { defectName: "Runflat", defectCount: 9 },
-      { defectName: "Tread Cut", defectCount: 4 },
-    ],
-  },
-  
+  { Dealer_code: "D001", Dealer_name: "GUPTA TYRES HOUSE", defects: [{ defectName: "Shoulder Cut", defectCount: 58 }, { defectName: "Sidewall Cut", defectCount: 34 }] },
+  { Dealer_code: "D002", Dealer_name: "SHIVDHARA TYRE WORLD", defects: [{ defectName: "Runflat", defectCount: 22 }, { defectName: "Tread Cut", defectCount: 15 }] },
+  { Dealer_code: "D003", Dealer_name: "R.K WHEELS", defects: [{ defectName: "CBU", defectCount: 6 }] },
+  { Dealer_code: "D004", Dealer_name: "MATHURA TYRE SHOP", defects: [{ defectName: "Shoulder Cut", defectCount: 11 }, { defectName: "Sidewall Cut", defectCount: 7 }] },
+  { Dealer_code: "D005", Dealer_name: "SINGH TYRES", defects: [{ defectName: "Runflat", defectCount: 3 }] },
+  { Dealer_code: "D006", Dealer_name: "KUMAR TYRES", defects: [{ defectName: "Tread Cut", defectCount: 9 }, { defectName: "CBU", defectCount: 2 }] },
+  { Dealer_code: "D007", Dealer_name: "RAJ TYRE STORE", defects: [{ defectName: "Shoulder Cut", defectCount: 4 }] },
+  { Dealer_code: "D008", Dealer_name: "BALAJI TYRES", defects: [{ defectName: "Sidewall Cut", defectCount: 5 }, { defectName: "Runflat", defectCount: 1 }] },
+  { Dealer_code: "D009", Dealer_name: "PRIYA TYRE HUB", defects: [{ defectName: "Tread Cut", defectCount: 6 }] },
+  { Dealer_code: "D010", Dealer_name: "VIJAY WHEELS", defects: [{ defectName: "Shoulder Cut", defectCount: 7 }, { defectName: "Sidewall Cut", defectCount: 3 }] },
+
+  { Dealer_code: "D011", Dealer_name: "MAHA TYRE CENTRE", defects: [{ defectName: "Runflat", defectCount: 8 }] },
+  { Dealer_code: "D012", Dealer_name: "ALOK TYRES", defects: [{ defectName: "Tread Cut", defectCount: 2 }] },
+  { Dealer_code: "D013", Dealer_name: "NAVEEN TYRE HOUSE", defects: [{ defectName: "CBU", defectCount: 1 }] },
+  { Dealer_code: "D014", Dealer_name: "SUNIL TYRES", defects: [{ defectName: "Sidewall Cut", defectCount: 10 }] },
+  { Dealer_code: "D015", Dealer_name: "ROYAL WHEELS", defects: [{ defectName: "Shoulder Cut", defectCount: 13 }] },
+  { Dealer_code: "D016", Dealer_name: "CITY TYRE POINT", defects: [{ defectName: "Runflat", defectCount: 2 }, { defectName: "Tread Cut", defectCount: 1 }] },
+  { Dealer_code: "D017", Dealer_name: "SURESH TYRE CO", defects: [{ defectName: "Sidewall Cut", defectCount: 4 }] },
+  { Dealer_code: "D018", Dealer_name: "NEXA TYRES", defects: [{ defectName: "Runflat", defectCount: 12 }] },
+  { Dealer_code: "D019", Dealer_name: "EVEREST TYRE SHOP", defects: [{ defectName: "Tread Cut", defectCount: 5 }] },
+  { Dealer_code: "D020", Dealer_name: "GOLDEN TYRE MART", defects: [{ defectName: "CBU", defectCount: 3 }, { defectName: "Shoulder Cut", defectCount: 2 }] }
 ];
 
 const Summary = () => {
@@ -95,7 +93,6 @@ const Summary = () => {
       const result = await response.json();
       setSummaryData(result.percentage_report || []);
       setOverallReportData(result.overall_summary || []);
-      // if API included dealer_summary use it
       if (result.dealer_summary && Array.isArray(result.dealer_summary)) {
         setDealerReportData(result.dealer_summary);
       }
@@ -126,7 +123,7 @@ const Summary = () => {
       }
 
       const result = await response.json();
-      setDealerReportData(result.dealer_report || result || []);
+      setDealerReportData(Array.isArray(result.dealer_report) ? result.dealer_report : (Array.isArray(result) ? result : []));
       setLoading(false);
     } catch (err) {
       console.error(err);
@@ -141,7 +138,7 @@ const Summary = () => {
       await fetchSummaryData({});
       await fetchDealerReport({});
 
-      // fallback to dummy data so you can see UI immediately
+      // fallback to larger dummy data so UI shows many rows
       setTimeout(() => {
         setDealerReportData((prev) => (Array.isArray(prev) && prev.length > 0 ? prev : DUMMY_DEALER_DATA));
       }, 250);
@@ -349,82 +346,86 @@ const Summary = () => {
               </h3>
 
               <div className="widget">
-                <table className="dealer-table full-width bordered">
-                  <thead style={{ backgroundColor: "#f0f0f0" }}>
-                    <tr>
-                      <th style={{ width: 60 }}></th>
-                      <th style={{ textAlign: "left" }}>Dealer Name</th>
-                      <th style={{ width: 140, textAlign: "center" }}>
-                        Total Defects
-                      </th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {dealerReportData && dealerReportData.length > 0 ? (
-                      dealerReportData.map((dealer, idx) => {
-                        const dealerName = getDealerName(dealer, idx);
-                        const dealerCode = getDealerCode(dealer, idx);
-                        const defects = getDefects(dealer);
-                        const totalDefects = Array.isArray(defects)
-                          ? defects.reduce((s, d) => s + (d.defectCount ?? d.count ?? d.DefectCount ?? 0), 0)
-                          : 0;
-                        const isOpen = expandedDealers.has(dealerCode);
-
-                        return (
-                          <React.Fragment key={`${dealerCode}-${idx}`}>
-                            <tr className="dealer-row">
-                              <td className="expand-cell">
-                                <button className="expand-btn" onClick={() => toggleDealer(dealerCode)}>
-                                  {isOpen ? <FiMinus /> : <FiPlus />}
-                                </button>
-                              </td>
-                              <td className="dealer-name-cell" style={{ textAlign: "left" }}>{dealerName}</td>
-                              <td style={{ textAlign: "center" }}>{totalDefects}</td>
-                            </tr>
-
-                            {isOpen && (
-                              <tr className="dealer-expanded-row">
-                                <td colSpan="3" style={{ padding: 0 }}>
-                                  <div className="expanded-inner">
-                                    <table className="inner-defect-table full-width">
-                                      <thead>
-                                        <tr>
-                                          <th style={{ textAlign: "left" }}>Defect Name</th>
-                                          <th style={{ width: 120, textAlign: "center" }}>Defect Count</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {Array.isArray(defects) && defects.length > 0 ? (
-                                          defects.map((d, di) => (
-                                            <tr key={di}>
-                                              <td style={{ textAlign: "left" }}>{d.defectName ?? d.DefectName ?? d.name ?? `Defect ${di + 1}`}</td>
-                                              <td style={{ textAlign: "center" }}>{d.defectCount ?? d.count ?? d.DefectCount ?? 0}</td>
-                                            </tr>
-                                          ))
-                                        ) : (
-                                          <tr>
-                                            <td colSpan="2" style={{ textAlign: "center" }}>No defect data for this dealer.</td>
-                                          </tr>
-                                        )}
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </td>
-                              </tr>
-                            )}
-                          </React.Fragment>
-                        );
-                      })
-                    ) : (
+                {/* WRAP the table in a scrollable container limited to ~10 rows */}
+                <div className="dealer-table-wrap">
+                  <table className="dealer-table full-width bordered">
+                    <thead style={{ backgroundColor: "#f0f0f0" }}>
                       <tr>
-                        <td colSpan="3" style={{ textAlign: "center", padding: 18 }}>
-                          No dealer summary available.
-                        </td>
+                        <th style={{ width: 60 }}></th>
+                        <th style={{ textAlign: "left" }}>Dealer Name</th>
+                        <th style={{ width: 140, textAlign: "center" }}>
+                          Total Defects
+                        </th>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+
+                    <tbody>
+                      {dealerReportData && dealerReportData.length > 0 ? (
+                        dealerReportData.map((dealer, idx) => {
+                          const dealerName = getDealerName(dealer, idx);
+                          const dealerCode = getDealerCode(dealer, idx);
+                          const defects = getDefects(dealer);
+                          const totalDefects = Array.isArray(defects)
+                            ? defects.reduce((s, d) => s + (d.defectCount ?? d.count ?? d.DefectCount ?? 0), 0)
+                            : 0;
+                          const isOpen = expandedDealers.has(dealerCode);
+
+                          return (
+                            <React.Fragment key={`${dealerCode}-${idx}`}>
+                              <tr className="dealer-row">
+                                <td className="expand-cell">
+                                  <button className="expand-btn" onClick={() => toggleDealer(dealerCode)}>
+                                    {isOpen ? <FiMinus /> : <FiPlus />}
+                                  </button>
+                                </td>
+                                <td className="dealer-name-cell" style={{ textAlign: "left" }}>{dealerName}</td>
+                                <td style={{ textAlign: "center" }}>{totalDefects}</td>
+                              </tr>
+
+                              {isOpen && (
+                                <tr className="dealer-expanded-row">
+                                  <td colSpan="3" style={{ padding: 0 }}>
+                                    <div className="expanded-inner">
+                                      <table className="inner-defect-table full-width">
+                                        <thead>
+                                          <tr>
+                                            <th style={{ textAlign: "left" }}>Defect Name</th>
+                                            <th style={{ width: 120, textAlign: "center" }}>Defect Count</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {Array.isArray(defects) && defects.length > 0 ? (
+                                            defects.map((d, di) => (
+                                              <tr key={di}>
+                                                <td style={{ textAlign: "left" }}>{d.defectName ?? d.DefectName ?? d.name ?? `Defect ${di + 1}`}</td>
+                                                <td style={{ textAlign: "center" }}>{d.defectCount ?? d.count ?? d.DefectCount ?? 0}</td>
+                                              </tr>
+                                            ))
+                                          ) : (
+                                            <tr>
+                                              <td colSpan="2" style={{ textAlign: "center" }}>No defect data for this dealer.</td>
+                                            </tr>
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          );
+                        })
+                      ) : (
+                        <tr>
+                          <td colSpan="3" style={{ textAlign: "center", padding: 18 }}>
+                            No dealer summary available.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                {/* end dealer-table-wrap */}
               </div>
             </div>
           )}
