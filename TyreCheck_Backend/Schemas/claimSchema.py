@@ -58,3 +58,13 @@ class OverallSummary(BaseModel):
 class SummaryResult(BaseModel):
     percentage_report: List[PercentageReportItem]
     overall_summary: List[OverallSummary]
+    
+    
+    
+class UpdateClaim(BaseModel):
+    claim_id: str
+    remark : Optional[str] = None
+    result_percentage : Optional[int] = None
+    type : Optional[str]
+    corrected_value : Optional[str]
+    

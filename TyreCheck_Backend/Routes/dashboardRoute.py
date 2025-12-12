@@ -13,26 +13,10 @@ logger = logging.getLogger(__name__)
 # Protected router: all routes here require a valid Bearer token
 protected_user_router = APIRouter(
     prefix="/claim",
-    tags=["User Protected"],
-    dependencies=[Depends(get_current_user)]  # enforces token on every route in this router
+    tags=["Dashboard Page Routes"],
+    dependencies=[Depends(get_current_user)] 
 )
 
-
-
-@protected_user_router.get("/get_dealers")
-async def get_dealers(cuurent_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    try:
-        call_sql = text("call tyrecheck.GetAllDealers();")
-        data = db.execute(call_sql)
-        
-        rows = data.mappings().all()
-        data = [dict(r) for r in rows]
-        print("--->", data)
-        
-        return True
-    except Exception as e:
-        print("Get Dealers Error")
-        raise e
 
 
 

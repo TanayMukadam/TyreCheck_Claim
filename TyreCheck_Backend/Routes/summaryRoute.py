@@ -11,8 +11,8 @@ from sqlalchemy import text
 
 protected_summary_route = APIRouter(
     prefix="/summary",
-    tags=["User Protected"]
-    # dependencies=[Depends(get_current_user)]
+    tags=["Summary Page Routes"],
+    dependencies=[Depends(get_current_user)]
 )
 
 # @protected_summary_route.get("/percentage_report")

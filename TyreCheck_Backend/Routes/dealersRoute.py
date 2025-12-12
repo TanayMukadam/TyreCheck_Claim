@@ -12,8 +12,8 @@ from sqlalchemy import text
 
 protected_dealer_route = APIRouter(
     prefix="/dealers",
-    tags=["User Protected"]
-    # dependencies=[Depends(get_current_user)]
+    tags=["Get Dealers Route"],
+    dependencies=[Depends(get_current_user)]
 )
 
 

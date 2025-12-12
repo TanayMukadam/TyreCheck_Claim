@@ -7,7 +7,7 @@ from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 #Routing
 from Routes.userRoutes import public_user_router
-from Routes.claimRoutes import protected_user_router
+from Routes.dashboardRoute import protected_user_router
 from Routes.viewClaimRoutes import protected_claimView_route
 from Routes.summaryRoute import protected_summary_route
 from Routes.dealersRoute import protected_dealer_route

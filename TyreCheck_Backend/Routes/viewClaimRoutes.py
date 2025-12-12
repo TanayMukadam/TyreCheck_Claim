@@ -1,10 +1,11 @@
 from Database.database import get_db
+from Database.models import ClaimWarranty
 from fastapi import FastAPI, APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from Utils.auth import get_current_user
 import logging
-
+from Schemas.claimSchema import UpdateClaim
 
 
 logger = logging.getLogger(__name__)
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 protected_claimView_route = APIRouter(
     prefix="/viewClaim",
-    tags=["User Protected"],
+    tags=["View Claim Routes"],
     dependencies=[Depends(get_current_user)]
 )
 
@@ -48,4 +49,40 @@ async def claimViewRoute(claim_id: str, db: Session = Depends(get_db)):
 
 
 
-# @protected_claimView_route.post()
+@protected_claimView_route.post("/updateClaimResult")
+async def update_claim_result(update_claim: UpdateClaim, db: Session = Depends(get_db)):
+    try:
+        
+        claim = db.query(ClaimWarranty).filter(
+            ClaimWarranty.Claim_Warranty_Id == update_claim.claim_id,
+            ClaimWarranty.Type == update_claim.type
+        ).first()
+
+        if not claim:
+            raise HTTPException(status_code=404, detail="Claim not found")
+
+        claim_update_id = claim.ID
+        claim_image_name = claim.Image_name
+
+        sql = text("""
+            call tyrecheck.USP_UpdateTyreDetails(
+                :claimid, :remark, :imgName, :update_id, :correctvalue, :result_percentage
+            )
+        """)
+
+        query = db.execute(sql, {
+            "claimid": update_claim.claim_id,
+            "remark": update_claim.remark,
+            "imgName": claim_image_name,
+            "update_id": claim_update_id,
+            "correctvalue": update_claim.corrected_value,
+            "result_percentage": update_claim.result_percentage
+        })
+
+        db.commit()
+        return {"message": "Data Updated Successfully"}
+            
+        
+    except Exception as e:
+        print(f"Update Claim Route Error: {e}")
+        raise e
