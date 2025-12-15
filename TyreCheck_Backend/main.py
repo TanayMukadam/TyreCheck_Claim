@@ -12,7 +12,6 @@ from Routes.viewClaimRoutes import protected_claimView_route
 from Routes.summaryRoute import protected_summary_route
 from Routes.dealersRoute import protected_dealer_route
 #Access Route
-from Utils.auth import get_current_user
 import shutil, os
 
 app = FastAPI(debug=True)
