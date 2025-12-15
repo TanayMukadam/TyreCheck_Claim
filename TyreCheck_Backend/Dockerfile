@@ -12,8 +12,5 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # Copy the entire backend code
 COPY . .
 
-# Expose the application port
-EXPOSE 8086
-
 # Command to run Uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8086"]

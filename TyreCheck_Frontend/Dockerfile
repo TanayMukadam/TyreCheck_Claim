@@ -19,7 +19,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy SSL certificates
-COPY certs/tyre_tyrechecks_com.crt /etc/nginx/ssl/tyre_tyrechecks_com.crt
+COPY certs/tyre.tyrechecks.com.crt /etc/nginx/ssl/tyre.tyrechecks.com.crt
 COPY certs/tyre.tyrechecks.com.key /etc/nginx/ssl/tyre.tyrechecks.com.key
 
 # Copy custom nginx config
@@ -28,7 +28,6 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy build output from first stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
-EXPOSE 80
 EXPOSE 443
 
 CMD ["nginx", "-g", "daemon off;"]
