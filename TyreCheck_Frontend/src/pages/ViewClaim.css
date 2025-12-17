@@ -1,4 +1,11 @@
 /* ViewClaim.css — scoped to .view-page */
+html,body{
+  height: 100vh;
+  width: 100vw;
+}
+.view-page{
+  height: 100vh;
+}
 .view-page,
 .view-page * {
   box-sizing: border-box;
@@ -80,6 +87,7 @@
   font-size: 16px;
   color: #222;
   text-align: center;
+  /* max-height: 20vh; */
 }
 
 /* single image column */

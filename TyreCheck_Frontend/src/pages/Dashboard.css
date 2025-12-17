@@ -1,4 +1,9 @@
 /* Dashboard.css — scoped to .dashboard-page */
+.dashboard-page {
+  height: 100vh;
+}
+
+
 .dashboard-page,
 .dashboard-page * {
   box-sizing: border-box;
@@ -154,7 +159,7 @@
 
 .dashboard-page .claims-table {
   width: 100%;
-  height: 500px;
+  height: 10%;
   border-collapse: separate;
   border-spacing: 0 10px;
   table-layout: fixed;
@@ -186,6 +191,7 @@
   font-size: 16px;
   color: #222;
   text-align: center;
+  /* height: 5px; */
 }
 
 .dashboard-page .left-align { text-align: left; }
