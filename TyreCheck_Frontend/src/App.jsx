@@ -6,14 +6,14 @@ import ViewClaim from "./pages/ViewClaim";
 import Summary from "./pages/Summary";
 import ProtectedRoute from "./routes/PrivateRoute";
 import Login from "./pages/Login";
-import SamplePage from "./pages/SamplePage";
+// import SamplePage from "./pages/SamplePage";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/sample_page" element={<SamplePage />} />
+        {/* <Route path="/sample_page" element={<SamplePage />} /> */}
         <Route
           path="/dashboard"
           element={
