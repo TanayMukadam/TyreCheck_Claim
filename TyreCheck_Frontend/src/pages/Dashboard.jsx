@@ -7,7 +7,7 @@ import { IoIosSearch } from "react-icons/io";
 import "./Dashboard.css";
 import tyrecheck_url from "../constants/tyrecheck.constants";
 import LoaderGif from "../assets/black.gif";
-
+import ExcelJS from "exceljs";
    
 // Convert backend CreatedDate "dd/MM/yyyy HH:mm" -> ISO date "yyyy-mm-dd"
 const createdDateToISO = (createdDate) => {
@@ -335,104 +335,117 @@ const Dashboard = () => {
     setFetchTrigger((t) => t + 1); // triggers fetchPage effect
   };
 
-  const exportCSV = async (fromDateParam, toDateParam) => {
+  const exportExcel = async (fromDateParam, toDateParam) => {
   try {
-    // CSV headers
-    const headers = [
-      "ClaimWarrantyId",
-      "DealerName",
-      "DealerCode",
-      "OutsideDamage",
-      "InsideDamage",
-      "FinalDamage",
-      "TreadDepthGauge",
-      "ClaimDate",
-      "OutsideException",
-      "InsideException",
-      "FinalException",
-      "GaugeException",
-    ];
-
-    // Prepare API request body using filters (null if empty)
     const body = {
-    claim_id: leadId || null,
-    fromDate: fromDateParam ?? filterStartDate ?? null,
-    toDate: toDateParam ?? filterEndDate ?? null,
-    dealer_code: dealerFilterCode || null,
-
-    // 🔥 ensure full export (no pagination)
-    page: 1,
-    per_page: 100000,
-    is_export: true,
-  };
-
+      claim_id: leadId || null,
+      fromDate: fromDateParam ?? filterStartDate ?? null,
+      toDate: toDateParam ?? filterEndDate ?? null,
+      dealer_code: dealerFilterCode || null,
+      page: 1,
+      per_page: 100000,
+      is_export: true,
+    };
 
     const token = localStorage.getItem("access_token");
 
-    // Fetch data from API
     const response = await fetch(`${tyrecheck_url}/auth/claim/export_pdf`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(body),
     });
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
+    if (!response.ok) throw new Error("Export API failed");
 
-    const dataToExport = await response.json();
-
-    if (!dataToExport || dataToExport.length === 0) {
-      alert("No data returned from API for the given filters");
+    const data = await response.json();
+    if (!data?.length) {
+      alert("No data to export");
       return;
     }
 
-    // Map data to CSV rows
-    const rows = dataToExport.map((r) => [
-      r.Claim_Warranty_Id ?? "",
-      r.Dealer_name ?? "",
-      r.Dealer_Code ?? "",
-      r.OutsideDamageOutput ?? "",
-      r.InsideDamageOutput ?? "",
-      r.FinalDamageOutput ?? "",
-      r.TreadDepthGaugeOutput ?? "",
-      r.ClaimDate ? new Date(r.ClaimDate).toLocaleString() : "",
-      r.OutsideException_Occurred ?? "",
-      r.InsideException_Occurred ?? "",
-      r.FinalException_Occurred ?? "",
-      r.GaugeException_Occurred ?? "",
-    ]);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Claims", {
+      views: [{ state: "frozen", ySplit: 1 }], // ✅ FREEZE HEADER
+    });
 
-    // Convert to CSV string
-    const csvContent = [
-      headers.join(","),
-      ...rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")),
-    ].join("\n");
+    // 🔹 Columns
+    worksheet.columns = [
+      { header: "ClaimWarrantyId", key: "id", width: 22 },
+      { header: "DealerName", key: "dealer", width: 25 },
+      { header: "DealerCode", key: "code", width: 18 },
+      { header: "OutsideDamage", key: "od", width: 22 },
+      { header: "InsideDamage", key: "idg", width: 22 },
+      { header: "FinalDamage", key: "fd", width: 22 },
+      { header: "TreadDepthGauge", key: "td", width: 20 },
+      { header: "ClaimDate", key: "date", width: 22 },
+      { header: "OutsideException", key: "oe", width: 22 },
+      { header: "InsideException", key: "ie", width: 22 },
+      { header: "FinalException", key: "fe", width: 22 },
+      { header: "GaugeException", key: "ge", width: 22 },
+    ];
 
-    // Download CSV
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
+    // 🔹 Add rows
+    data.forEach((r) => {
+      worksheet.addRow({
+        id: r.Claim_Warranty_Id || "",
+        dealer: r.Dealer_name || "",
+        code: r.Dealer_Code || "",
+        od: r.OutsideDamageOutput || "",
+        idg: r.InsideDamageOutput || "",
+        fd: r.FinalDamageOutput || "",
+        td: r.TreadDepthGaugeOutput ? `${r.TreadDepthGaugeOutput} mm` : "",
+        date: r.ClaimDate
+          ? new Date(r.ClaimDate).toLocaleString("en-GB")
+          : "",
+        oe: r.OutsideException_Occurred || "",
+        ie: r.InsideException_Occurred || "",
+        fe: r.FinalException_Occurred || "",
+        ge: r.GaugeException_Occurred || "",
+      });
+    });
 
-    const now = new Date();
+    // 🔹 STYLE HEADER (BLUE + BOLD + WHITE)
+    worksheet.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
+      cell.alignment = { horizontal: "center", vertical: "middle" };
+      cell.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: "FF4472C4" }, // Excel blue
+      };
+      cell.border = {
+        top: { style: "thin" },
+        left: { style: "thin" },
+        bottom: { style: "thin" },
+        right: { style: "thin" },
+      };
+    });
+
+    // 🔹 Enable filters
+    worksheet.autoFilter = {
+      from: "A1",
+      to: "L1",
+    };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
     const from = fromDateParam || "ALL";
     const to = toDateParam || "TODAY";
 
-    a.download = `TyreCheck_Claims_${from}_to_${to}.csv`;
-
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    console.log("CSV exported successfully from API!");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `TyreCheck_Claims_${from}_to_${to}.xlsx`;
+    link.click();
   } catch (err) {
-    console.error("Failed to export CSV:", err);
-    alert("Failed to export CSV. Check console for details.");
+    console.error(err);
+    alert("Excel export failed");
   }
 };
 
@@ -474,7 +487,7 @@ const Dashboard = () => {
   }
 
   // temporarily apply dates for export
-  exportCSV(fromDate, toDate);
+  exportExcel(fromDate, toDate);
   setShowExportPopup(false);
 };
 
