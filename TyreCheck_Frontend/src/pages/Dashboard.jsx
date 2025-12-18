@@ -50,6 +50,12 @@ const Dashboard = () => {
   const [dealerFilterCode, setDealerFilterCode] = useState("");
   const [dealerFilterName, setDealerFilterName] = useState("");
 
+  // 🔹 Export popup states
+  const [showExportPopup, setShowExportPopup] = useState(false);
+  const [exportType, setExportType] = useState("LAST_1_MONTH");
+  const [exportStartDate, setExportStartDate] = useState("");
+  const [exportEndDate, setExportEndDate] = useState("");
+
   // Data & state
   const [tableData, setTableData] = useState([]);
   const [dealerData, setDealerData] = useState([]);
@@ -329,7 +335,7 @@ const Dashboard = () => {
     setFetchTrigger((t) => t + 1); // triggers fetchPage effect
   };
 
-  const exportCSV = async () => {
+  const exportCSV = async (fromDateParam, toDateParam) => {
   try {
     // CSV headers
     const headers = [
@@ -349,11 +355,17 @@ const Dashboard = () => {
 
     // Prepare API request body using filters (null if empty)
     const body = {
-      claim_id: leadId || null,
-      fromDate: filterStartDate || null,
-      toDate: filterEndDate || null,
-      dealer_code: dealerFilterCode || null,
-    };
+    claim_id: leadId || null,
+    fromDate: fromDateParam ?? filterStartDate ?? null,
+    toDate: toDateParam ?? filterEndDate ?? null,
+    dealer_code: dealerFilterCode || null,
+
+    // 🔥 ensure full export (no pagination)
+    page: 1,
+    per_page: 100000,
+    is_export: true,
+  };
+
 
     const token = localStorage.getItem("access_token");
 
@@ -407,8 +419,10 @@ const Dashboard = () => {
     a.href = url;
 
     const now = new Date();
-    const ts = now.toISOString().slice(0, 19).replace(/[:T]/g, "-");
-    a.download = `claims_export_API_${ts}.csv`;
+    const from = fromDateParam || "ALL";
+    const to = toDateParam || "TODAY";
+
+    a.download = `TyreCheck_Claims_${from}_to_${to}.csv`;
 
     document.body.appendChild(a);
     a.click();
@@ -422,6 +436,47 @@ const Dashboard = () => {
   }
 };
 
+  const handleExportConfirm = () => {
+  const today = new Date();
+  const format = (d) => d.toISOString().slice(0, 10);
+
+  let fromDate = null;
+  let toDate = null;
+
+  /* 🔹 LAST 1 MONTH (today - 1 month → today) */
+  if (exportType === "LAST_1_MONTH") {
+    const lastMonth = new Date();
+    lastMonth.setMonth(today.getMonth() - 1);
+    fromDate = format(lastMonth);
+    toDate = format(today);
+  }
+
+  /* 🔹 FROM START (fixed start: 9 Sept 2025 → today) */
+  if (exportType === "FROM_START") {
+    fromDate = "2025-09-09";
+    toDate = format(today);
+  }
+
+  /* 🔹 CUSTOM (both dates required) */
+  if (exportType === "CUSTOM") {
+    if (!exportStartDate || !exportEndDate) {
+      alert("Please select BOTH Start Date and End Date");
+      return;
+    }
+
+    if (exportStartDate > exportEndDate) {
+      alert("Start Date cannot be greater than End Date");
+      return;
+    }
+
+    fromDate = exportStartDate;
+    toDate = exportEndDate;
+  }
+
+  // temporarily apply dates for export
+  exportCSV(fromDate, toDate);
+  setShowExportPopup(false);
+};
 
   const handleLogout = () => {
     localStorage.removeItem("isAuth");
@@ -599,13 +654,14 @@ const Dashboard = () => {
               </button>
 
               <button
-  type="button"
-  className="search-action-btn export-btn"
-  onClick={exportCSV}
->
-  <RiFileExcel2Line className="export-icon" />
-  <span>Export</span>
-</button>
+                  type="button"
+                  className="search-action-btn export-btn"
+                  onClick={() => setShowExportPopup(true)}
+                >
+
+                <RiFileExcel2Line className="export-icon" />
+                <span>Export</span>
+              </button>
               {/* big Clear button intentionally removed */}
             </div>
           </div>
@@ -723,6 +779,62 @@ const Dashboard = () => {
           )}
         </div>
       </section>
+
+      {showExportPopup && (
+  <div className="export-overlay">
+    <div className="export-modal">
+      <h3>Export Options</h3>
+
+      <label>
+        <input
+          type="radio"
+          checked={exportType === "LAST_1_MONTH"}
+          onChange={() => setExportType("LAST_1_MONTH")}
+        />
+        Last 1 Month
+      </label>
+
+      <label>
+        <input
+          type="radio"
+          checked={exportType === "FROM_START"}
+          onChange={() => setExportType("FROM_START")}
+        />
+        From Start
+      </label>
+
+      <label>
+        <input
+          type="radio"
+          checked={exportType === "CUSTOM"}
+          onChange={() => setExportType("CUSTOM")}
+        />
+        Custom Date
+      </label>
+
+      {exportType === "CUSTOM" && (
+        <div className="custom-date">
+          <input
+            type="date"
+            value={exportStartDate}
+            onChange={(e) => setExportStartDate(e.target.value)}
+          />
+          <input
+            type="date"
+            value={exportEndDate}
+            onChange={(e) => setExportEndDate(e.target.value)}
+          />
+        </div>
+      )}
+
+      <div className="export-actions">
+        <button onClick={handleExportConfirm}>Export</button>
+        <button onClick={() => setShowExportPopup(false)}>Cancel</button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
