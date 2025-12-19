@@ -77,6 +77,34 @@ const Dashboard = () => {
 
   const token = localStorage.getItem("access_token");
 
+  const debouncedLeadId = useDebounce(leadId, 500);
+
+  const renderSkeletonRows = () => {
+    return Array.from({ length: rowsPerPage }).map((_, i) => (
+      <tr key={`skeleton-${i}`} className="skeleton-row">
+        {Array.from({ length: 6 }).map((_, j) => (
+          <td key={j}>
+            <div className="skeleton-box"></div>
+          </td>
+        ))}
+      </tr>
+    ));
+  };
+
+  function useDebounce(value, delay = 500) {
+        const [debouncedValue, setDebouncedValue] = useState(value);
+
+        useEffect(() => {
+          const timer = setTimeout(() => {
+            setDebouncedValue(value);
+          }, delay);
+
+          return () => clearTimeout(timer);
+        }, [value, delay]);
+
+        return debouncedValue;
+      }
+
   function parseBackendDate(dateStr) {
       if (!dateStr) return null;
 
@@ -102,126 +130,186 @@ const Dashboard = () => {
       return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
     }
  
-  useEffect(() => {
-    let isMounted = true;
-    const loadDealers = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(`${tyrecheck_url}/auth/dealers`, {
-          method: "GET",
-          headers: {
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-        });
+      useEffect(() => {
+      let isMounted = true;
 
-        if (!res.ok) {
-          const txt = await res.text().catch(() => null);
-          throw new Error(txt || `${res.status} ${res.statusText}`);
+      const loadDealers = async () => {
+        setError(null);
+
+        // ✅ 1. Check cache first
+        const cachedDealers = sessionStorage.getItem("dealers_list");
+        if (cachedDealers) {
+          try {
+            const parsed = JSON.parse(cachedDealers);
+            if (Array.isArray(parsed)) {
+              setDealerData(parsed);
+              return; // 🚀 stop here, no API call
+            }
+          } catch (e) {
+            // ignore parse error & fallback to API
+          }
         }
 
-        const data = await res.json();
-        if (isMounted) setDealerData(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Failed to load dealers:", err);
-        if (isMounted) setError("Failed to load dealers");
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
+        // ✅ 2. Fetch from API only if cache missing
+        try {
+          setLoading(true);
 
-    loadDealers();
-    return () => {
-      isMounted = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+          const res = await fetch(`${tyrecheck_url}/auth/dealers`, {
+            method: "GET",
+            headers: {
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          });
 
- 
-  useEffect(() => {
-    let isMounted = true;
+          if (!res.ok) {
+            const txt = await res.text().catch(() => null);
+            throw new Error(txt || `${res.status} ${res.statusText}`);
+          }
 
-    const fetchPage = async () => {
-      setLoading(true);
-      setError(null);
+          const data = await res.json();
 
-      const url = `${tyrecheck_url}/auth/claim/details?per_page=${rowsPerPage}`;
+          if (isMounted && Array.isArray(data)) {
+            setDealerData(data);
 
-      const requestBody = {
-        page: currentPage,
-        ClaimWarrantyId: leadId || null,
-        DealerId: dealerFilterCode || null, // send code (this fixes the earlier mismatch)
-        Servicetype: null,
-        // send SQL-compatible datetimes
-        FromDate: filterStartDate ? isoToSqlDatetime(filterStartDate, false) : null,
-        ToDate: filterEndDate ? isoToSqlDatetime(filterEndDate, true) : null,
+            // ✅ 3. Save to cache
+            sessionStorage.setItem("dealers_list", JSON.stringify(data));
+          }
+        } catch (err) {
+          console.error("Failed to load dealers:", err);
+          if (isMounted) setError("Failed to load dealers");
+        } finally {
+          if (isMounted) setLoading(false);
+        }
       };
 
-      try {
-        const res = await fetch(url, {
+      loadDealers();
+
+      return () => {
+        isMounted = false;
+      };
+    }, []);
+
+      const [pageCache, setPageCache] = useState({});
+      const MAX_CACHE_SIZE = 30;
+
+      useEffect(() => {
+  let isMounted = true;
+
+  const fetchPage = async () => {
+    setError(null);
+
+    const cacheKey = JSON.stringify({
+      page: currentPage,
+      leadId: debouncedLeadId,
+      dealer: dealerFilterCode,
+      from: filterStartDate,
+      to: filterEndDate,
+    });
+
+    // ✅ Serve from cache
+    if (pageCache[cacheKey]) {
+      const cached = pageCache[cacheKey];
+      setTableData(cached.data);
+      setBackendTotalPages(cached.totalPages);
+      setBackendTotalRows(cached.totalRows);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(
+        `${tyrecheck_url}/auth/claim/details?per_page=${rowsPerPage}`,
+        {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify(requestBody),
-        });
-
-        if (res.status === 401) {
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("isAuth");
-          navigate("/", { replace: true });
-          return;
+          body: JSON.stringify({
+            page: currentPage,
+            ClaimWarrantyId: debouncedLeadId || null,
+            DealerId: dealerFilterCode || null,
+            Servicetype: null,
+            FromDate: filterStartDate
+              ? isoToSqlDatetime(filterStartDate, false)
+              : null,
+            ToDate: filterEndDate
+              ? isoToSqlDatetime(filterEndDate, true)
+              : null,
+          }),
         }
+      );
 
-        if (!res.ok) {
-          const text = await res.text().catch(() => null);
-          throw new Error(text || `HTTP ${res.status} ${res.statusText}`);
-        }
-
-        const json = await res.json();
-
-        const normalized = (json.data || []).map((r) => ({
-          id: r.Claim_Warranty_Id ?? r.ClaimWarrantyId ?? r.View ?? "",
-          dealer: r.Dealer_name ?? r.DealerName ?? "",
-          claimType: r.Service_type ?? r.ServiceType ?? "",
-          createdDateRaw: r.CreatedDate ?? null,
-          // claimWarrantyDate: createdDateToISO(r.CreatedDate) || null,
-          claimWarrantyDate: formatDisplayDate(parseBackendDate(r.CreatedDate)),
-          processedTime: formatProcessedTime(r.InspectionTime ?? r.TotalAVG ?? ""),
-        }));
-
-        if (isMounted) {
-          setTableData(normalized);
-
-          const tPages =
-            Number(json.total_pages ?? json.totalPages ?? json.totalPagesCount ?? 1) || 1;
-          const tRows =
-            Number(json.total ?? json.total_rows ?? json.totalRows ?? 0) || 0;
-
-          setBackendTotalPages(tPages);
-          setBackendTotalRows(tRows);
-
-          const currentWindowStart =
-            Math.floor((currentPage - 1) / PAGE_WINDOW_SIZE) * PAGE_WINDOW_SIZE + 1;
-          setWindowStart(currentWindowStart);
-        }
-      } catch (err) {
-        console.error("Fetch page error:", err);
-        if (isMounted) setError(err.message || "Network error — check backend");
-      } finally {
-        if (isMounted) setLoading(false);
+      if (res.status === 401) {
+        localStorage.clear();
+        navigate("/", { replace: true });
+        return;
       }
-    };
 
-    fetchPage();
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    return () => {
-      isMounted = false;
-    };
-    // intentionally only depend on currentPage + fetchTrigger
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, fetchTrigger]);
+      const json = await res.json();
+
+      const normalized = (json.data || []).map((r) => ({
+        id: r.Claim_Warranty_Id ?? "",
+        dealer: r.Dealer_name ?? "",
+        claimType: r.Service_type ?? "",
+        claimWarrantyDate: formatDisplayDate(
+          parseBackendDate(r.CreatedDate)
+        ),
+        processedTime: formatProcessedTime(r.InspectionTime ?? ""),
+      }));
+
+      if (!isMounted) return;
+
+      const tPages = Number(json.total_pages ?? 1);
+      const tRows = Number(json.total ?? 0);
+
+      setTableData(normalized);
+      setBackendTotalPages(tPages);
+      setBackendTotalRows(tRows);
+
+      setPageCache((prev) => {
+        const newCache = { ...prev };
+
+        // If cache limit reached → remove oldest entry
+        const keys = Object.keys(newCache);
+        if (keys.length >= MAX_CACHE_SIZE) {
+          delete newCache[keys[0]];
+        }
+
+        newCache[cacheKey] = {
+          data: normalized,
+          totalPages: tPages,
+          totalRows: tRows,
+        };
+
+        // console.log(Object.keys(pageCache).length);
+
+        return newCache;
+      });
+
+    } catch (err) {
+      if (isMounted) setError("Failed to load data");
+    } finally {
+      if (isMounted) setLoading(false);
+    }
+  };
+
+  fetchPage();
+
+  return () => {
+    isMounted = false;
+  };
+}, [
+  currentPage,
+  fetchTrigger,
+  debouncedLeadId,
+  dealerFilterCode,
+  filterStartDate,
+  filterEndDate,
+]);
 
  
   const dealersList = useMemo(() => {
@@ -707,39 +795,44 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {tableData.length === 0 ? (
+                  {loading ? (
+                    // 🔹 Skeleton rows while loading
+                    renderSkeletonRows()
+                  ) : tableData.length === 0 ? (
+                    // 🔹 No data state
                     <tr className="empty-row">
                       <td colSpan="7">No Data Available</td>
                     </tr>
                   ) : (
-                      tableData.map((row, i) => (
-                        <tr key={`${row.id}-${(currentPage - 1) * rowsPerPage + i}`}>
-                          <td>{row.id}</td>
-                          <td>{row.dealer}</td>
-                          <td>{row.claimType}</td>
-                          <td>{row.claimWarrantyDate}</td>
-                          <td>{row.processedTime}</td>
-                          <td>
-                            <button
-                              className="view-action"
-                              onClick={() => {
-                                const safeId = row.id.toString().replace(/\W+/g, "_");
-                                const windowName = `claim_${safeId}`;
+                    // 🔹 Actual data rows
+                    tableData.map((row, i) => (
+                      <tr key={`${row.id}-${(currentPage - 1) * rowsPerPage + i}`}>
+                        <td>{row.id}</td>
+                        <td>{row.dealer}</td>
+                        <td>{row.claimType}</td>
+                        <td>{row.claimWarrantyDate}</td>
+                        <td>{row.processedTime}</td>
+                        <td>
+                          <button
+                            className="view-action"
+                            onClick={() => {
+                              const safeId = row.id.toString().replace(/\W+/g, "_");
+                              const windowName = `claim_${safeId}`;
 
-                                window.open(
-                                  `/claim/${encodeURIComponent(row.id)}`,
-                                  windowName,
-                                  "width=1300,height=900,left=150,top=80,resizable=yes,scrollbars=yes"
-                                );
-                              }}
-                            >
-                              <FaEye className="eye" />
-                              <span className="view-text">View</span>
-                            </button>
-                          </td>
-                        </tr>
-                        ))
-                      )}
+                              window.open(
+                                `/claim/${encodeURIComponent(row.id)}`,
+                                windowName,
+                                "width=1300,height=900,left=150,top=80,resizable=yes,scrollbars=yes"
+                              );
+                            }}
+                          >
+                            <FaEye className="eye" />
+                            <span className="view-text">View</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
 
